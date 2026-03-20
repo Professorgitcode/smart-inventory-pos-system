@@ -1,11 +1,17 @@
+using backend.Data;
 using backend.Models;
 using backend.Services;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 builder.Services.AddOpenApi();
-builder.Services.AddSingleton<ProductService>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=inventory.db"));
 
 var app = builder.Build();
 
@@ -14,32 +20,32 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.MapGet("/products", (ProductService service) =>
+app.MapGet("/products", async ([FromServices] ProductService service) =>
 {
-    return service.GetAll();
+    return await service.GetAll();
 });
 
-app.MapGet("/products/{id}", (int id, ProductService service) =>
+app.MapGet("/products/{id}", async ([FromServices] ProductService service, int id) =>
 {
-    var product = service.GetById(id);
+    var product = await service.GetById(id);
     return product is not null ? Results.Ok(product) : Results.NotFound();
 });
 
-app.MapPost("/products", (Product product, ProductService service) =>
+app.MapPost("/products", async (Product product, [FromServices] ProductService service) =>
 {
-    service.Add(product);
+    await service.Add(product);
     return Results.Created($"/products/{product.Id}", product);
 });
 
-app.MapPut("/products/{id}", (int id, Product updatedProduct, ProductService service) =>
+app.MapPut("/products/{id}", async (int id, Product updatedProduct, [FromServices] ProductService service) =>
 {
-    var result = service.Update(id, updatedProduct);
+    var result = await service.Update(id, updatedProduct);
     return result is not null ? Results.Ok(result) : Results.NotFound();
 });
 
-app.MapDelete("/products/{id}", (int id, ProductService service) =>
+app.MapDelete("/products/{id}", async (int id, [FromServices] ProductService service) =>
 {
-    var success = service.Delete(id);
+    var success = await service.Delete(id);
     return success ? Results.NoContent() : Results.NotFound();
 });
 
