@@ -1,4 +1,5 @@
 using backend.Models;
+using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +12,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// 👇 ADD YOUR CODE HERE
 var products = new List<Product>
 {
     new Product { Id = 1, Name = "Phone", Price = 150, Stock = 10 },
@@ -26,11 +26,38 @@ app.MapPost("/products", (Product product) =>
     return Results.Created($"/products/{product.Id}", product);
 });
 
-// 👆 END HERE
-
-app.Run();
-
-/*record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+app.MapGet("/products/{id}", (int id) =>
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}*/
+    var product = products.FirstOrDefault(p => p.Id == id);
+
+    return product is not null 
+        ? Results.Ok(product) 
+        : Results.NotFound();
+});
+
+app.MapPut("/products/{id}", (int id, Product updatedProduct) =>
+{
+    var product = products.FirstOrDefault(p => p.Id == id);
+
+    if (product is null)
+        return Results.NotFound();
+
+    product.Name = updatedProduct.Name;
+    product.Price = updatedProduct.Price;
+    product.Stock = updatedProduct.Stock;
+
+    return Results.Ok(product);
+});
+
+app.MapDelete("/products/{id}", (int id) =>
+{
+    var product = products.FirstOrDefault(p => p.Id == id);
+
+    if (product is null)
+        return Results.NotFound();
+
+    products.Remove(product);
+
+    return Results.NoContent();
+});
+app.Run();
