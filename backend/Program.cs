@@ -1,9 +1,11 @@
 using backend.Models;
+using backend.Services;
 using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton<ProductService>();
 
 var app = builder.Build();
 
@@ -12,52 +14,33 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-var products = new List<Product>
+app.MapGet("/products", (ProductService service) =>
 {
-    new Product { Id = 1, Name = "Phone", Price = 150, Stock = 10 },
-    new Product { Id = 2, Name = "Charger", Price = 10, Stock = 50 }
-};
+    return service.GetAll();
+});
 
-app.MapGet("/products", () => products);
-
-app.MapPost("/products", (Product product) =>
+app.MapGet("/products/{id}", (int id, ProductService service) =>
 {
-    products.Add(product);
+    var product = service.GetById(id);
+    return product is not null ? Results.Ok(product) : Results.NotFound();
+});
+
+app.MapPost("/products", (Product product, ProductService service) =>
+{
+    service.Add(product);
     return Results.Created($"/products/{product.Id}", product);
 });
 
-app.MapGet("/products/{id}", (int id) =>
+app.MapPut("/products/{id}", (int id, Product updatedProduct, ProductService service) =>
 {
-    var product = products.FirstOrDefault(p => p.Id == id);
-
-    return product is not null 
-        ? Results.Ok(product) 
-        : Results.NotFound();
+    var result = service.Update(id, updatedProduct);
+    return result is not null ? Results.Ok(result) : Results.NotFound();
 });
 
-app.MapPut("/products/{id}", (int id, Product updatedProduct) =>
+app.MapDelete("/products/{id}", (int id, ProductService service) =>
 {
-    var product = products.FirstOrDefault(p => p.Id == id);
-
-    if (product is null)
-        return Results.NotFound();
-
-    product.Name = updatedProduct.Name;
-    product.Price = updatedProduct.Price;
-    product.Stock = updatedProduct.Stock;
-
-    return Results.Ok(product);
+    var success = service.Delete(id);
+    return success ? Results.NoContent() : Results.NotFound();
 });
 
-app.MapDelete("/products/{id}", (int id) =>
-{
-    var product = products.FirstOrDefault(p => p.Id == id);
-
-    if (product is null)
-        return Results.NotFound();
-
-    products.Remove(product);
-
-    return Results.NoContent();
-});
 app.Run();
