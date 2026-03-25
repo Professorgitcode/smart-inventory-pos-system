@@ -33,7 +33,25 @@ app.MapGet("/products/{id}", async ([FromServices] ProductService service, int i
 
 app.MapPost("/products", async (Product product, [FromServices] ProductService service) =>
 {
+    // Validation
+    if (string.IsNullOrWhiteSpace(product.Name))
+        return Results.BadRequest("Product name is required");
+
+    if (product.Price <= 0)
+        return Results.BadRequest("Price must be greater than 0");
+
+    if (product.Stock < 0)
+        return Results.BadRequest("Stock cannot be negative");
+
+    // Check duplicate ID
+    var products = await service.GetAll();
+    var existing = products.FirstOrDefault(p => p.Id == product.Id);
+
+    if (existing != null)
+        return Results.BadRequest("Product with this ID already exists");
+
     await service.Add(product);
+
     return Results.Created($"/products/{product.Id}", product);
 });
 
