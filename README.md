@@ -1,44 +1,34 @@
-# Smart Inventory POS System
+# 🛒 Smart Inventory POS System
 
-## 📌 Project Overview
+## 🚀 Overview
+A full-stack inventory and POS system built with ASP.NET Core and React.
 
-This is a Smart Inventory and Point of Sale (POS) System built using ASP.NET Core.
-The system is designed to manage products, stock levels, and sales operations.
+## ⚙️ Tech Stack
+- Backend: ASP.NET Core (.NET)
+- Frontend: React
+- Database: SQLite
+- ORM: Entity Framework Core
 
-## 🚀 Features
-
-* Product Management (Add, View Products)
-* Inventory Tracking
-* REST API Backend
-* Scalable system design
-
-## 🛠 Tech Stack
-
-* C#
-* ASP.NET Core (Minimal API)
-* Git & GitHub
+## ✅ Features
+- Product CRUD operations
+- Input validation
+- Service Layer architecture
+- REST API
 
 ## 📡 API Endpoints
+| Method | Endpoint        | Description        |
+|--------|----------------|-------------------|
+| GET    | /products      | Get all products  |
+| GET    | /products/{id} | Get product by ID |
+| POST   | /products      | Add product       |
+| PUT    | /products/{id} | Update product    |
 
-* GET /products → Retrieve all products
-* POST /products → Add new product
+## 📌 Status
+🟢 Backend Complete  
+🟡 Frontend In Progress  
 
-## ▶️ How to Run
-
-```bash
-dotnet run
-```
-
-Then open:
-https://localhost:5216/products
-
-## 📈 Future Improvements
-
-* Database integration (SQL Server / SQLite)
-* User authentication
-* Sales module
-* Reporting dashboard
-* Frontend (React or Blazor)
+## 🔗 Live Updates
+Follow development on LinkedIn
 
 ## 👨‍💻 Author
 
