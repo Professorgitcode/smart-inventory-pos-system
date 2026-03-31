@@ -45,7 +45,7 @@ app.MapPost("/products", async (Product product, [FromServices] ProductService s
 {
     // Validation
     if (string.IsNullOrWhiteSpace(product.Name))
-        return Results.BadRequest("Product name is required");
+        return Results.BadRequest("Product Name is required!");
 
     if (product.Price <= 0)
         return Results.BadRequest("Price must be greater than 0");
