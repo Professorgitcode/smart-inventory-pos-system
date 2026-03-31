@@ -12,6 +12,16 @@ builder.Services.AddOpenApi();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=inventory.db"));
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReact",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
 
 var app = builder.Build();
 
@@ -66,5 +76,5 @@ app.MapDelete("/products/{id}", async (int id, [FromServices] ProductService ser
     var success = await service.Delete(id);
     return success ? Results.NoContent() : Results.NotFound();
 });
-
+app.UseCors("AllowReact");
 app.Run();
