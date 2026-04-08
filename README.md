@@ -37,25 +37,25 @@ A full-stack Smart Inventory and POS system built with ASP.NET Core and React.
 | POST   | /products      | Add product       |
 | PUT    | /products/{id} | Update product    |
 
-## 📌 Status
+## Status
 🟢 Backend Complete  
 🟡 Frontend In Progress 
 
-## 🧠 Learning Highlights
+## Learning Highlights
 - React state management
 - REST API integration
 - Full CRUD operations
 - Git & GitHub workflow
 - Debugging real-world errors
 
-## 🔧 Upcoming Features
+## Upcoming Features
 - POS (Point of Sale) module
 - Sales tracking
 - Authentication (Login system)
 - Reports & analytics
 - UI redesign (modern dashboard)
 
-## 🔗 Live Updates
+## Live Updates
 Follow development on LinkedIn
 
 ## 👨‍💻 Author
