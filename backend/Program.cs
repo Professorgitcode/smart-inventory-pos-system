@@ -12,6 +12,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=inventory.db"));
+builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact",
@@ -29,6 +30,8 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.MapControllers();
 
 app.MapGet("/products", async ([FromServices] ProductService service) =>
 {
