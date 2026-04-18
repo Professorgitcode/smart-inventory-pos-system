@@ -1,12 +1,13 @@
 # Smart Inventory POS System
 
 ## Overview
-A full-stack Smart Inventory and POS system built with ASP.NET Core and React.
+A full-stack Point of Sale (POS) and Inventory Management System with analytics and future AI integration.
 
 ## Tech Stack
-- Backend: ASP.NET Core (.NET)
-- Frontend: React
+- Backend: ASP.NET Core Web API (.NET)
+- Frontend: React.js
 - Database: SQLite
+- Icons/UI: lucide-react
 - ORM: Entity Framework Core
 
 ## Features
@@ -24,6 +25,13 @@ A full-stack Smart Inventory and POS system built with ASP.NET Core and React.
 - Inventory Value
 - Low Stock Alerts
 - Stock Charts Visualization
+
+## Architecture
+- Frontend (React)
+- Backend (REST API)
+- Database Layer
+- Future: AI Engine (ML.NET)
+
 
 ### Notifications
 - Toast messages (success/error)
@@ -53,7 +61,21 @@ A full-stack Smart Inventory and POS system built with ASP.NET Core and React.
 - Sales tracking
 - Authentication (Login system)
 - Reports & analytics
-- UI redesign (modern dashboard)
+- AI demand prediction
+- Sales reports page
+- Authentication system
+- Multi-user support
+
+## How to Run
+
+### Backend
+- cd backend
+- dotnet run
+
+### Frontend
+- cd frontend
+- npm install
+- npm start
 
 ## Live Updates
 Follow development on LinkedIn
