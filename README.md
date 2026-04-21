@@ -1,49 +1,61 @@
-# Smart Inventory POS System
+# Smart Inventory & POS System
 
-## Overview
-A full-stack Point of Sale (POS) and Inventory Management System with analytics and future AI integration.
+A full-stack inventory and point-of-sale (POS) system built with:
 
-## Tech Stack
-- Backend: ASP.NET Core Web API (.NET)
-- Frontend: React.js
-- Database: SQLite
-- Icons/UI: lucide-react
-- ORM: Entity Framework Core
+- Frontend: React (Dashboard UI)
+- Backend: ASP.NET Core Web API
+- Database: SQLite (EF Core)
 
-## Features
+---
+
+## Features Implemented
 
 ### Inventory Management
-- Add products
-- View products
-- Update products
-- Delete products
-- Search products
+- View all products
+- Add new product (Modal UI)
+- Edit existing product
+- Delete product
+- Search/filter products (frontend)
 
-### Dashboard Analytics
-- Total Products
-- Total Stock
-- Inventory Value
-- Low Stock Alerts
-- Stock Charts Visualization
+### Backend API (RESTful)
+- GET /api/products
+- POST /api/products
+- PUT /api/products/{id}
+- DELETE /api/products/{id}
+
+### UI Enhancements
+- Modal-based Add/Edit (ProductModal)
+- Toast notifications (success/error/info)
+- Clean dashboard layout
+
+---
 
 ## Architecture
-- Frontend (React)
-- Backend (REST API)
-- Database Layer
-- Future: AI Engine (ML.NET)
+
+### Backend Structure
+
+backend/
+│
+├── Controllers/
+│ └── ProductsController.cs
+│
+├── Services/
+│ └── ProductService.cs
+│
+├── Models/
+│ └── Product.cs
+│
+├── DTOs/
+│ └── ProductDto.cs
+│
+├── Data/
+│ └── AppDbContext.cs
 
 
-### Notifications
-- Toast messages (success/error)
-- Low stock alerts
+### Architecture Pattern
+- Controller → DTO → Service → Model → Database
 
-## API Endpoints
-| Method | Endpoint       | Description       |
-|--------|----------------|-------------------|
-| GET    | /products      | Get all products  |
-| GET    | /products/{id} | Get product by ID |
-| POST   | /products      | Add product       |
-| PUT    | /products/{id} | Update product    |
+---
 
 ## Status
 🟢 Backend Complete  
@@ -53,6 +65,7 @@ A full-stack Point of Sale (POS) and Inventory Management System with analytics 
 - React state management
 - REST API integration
 - Full CRUD operations
+- UI Redesign
 - Git & GitHub workflow
 - Debugging real-world errors
 
@@ -63,22 +76,39 @@ A full-stack Point of Sale (POS) and Inventory Management System with analytics 
 - Reports & analytics
 - AI demand prediction
 - Sales reports page
-- Authentication system
 - Multi-user support
 
-## How to Run
+## Setup Instructions (How to Run)
 
-### Backend
-- cd backend
-- dotnet run
+### Backend (ASP.NET Core)
 
-### Frontend
-- cd frontend
-- npm install
-- npm start
+``bash
+cd backend
+dotnet restore
+dotnet build
+dotnet ef database update
+dotnet run
+
+Backend runs on:
+
+http://localhost:5216
+
+### Frontend (React)
+cd frontend
+npm install
+npm start
+
+Frontend runs on:
+
+http://localhost:3000
+
+API Base URL
+http://localhost:5216/api/products
 
 ## Live Updates
 Follow development on LinkedIn
+www.linkedin.com/in/albert-ryan-0510marc
+
 
 ## 👨‍💻 Author
 
