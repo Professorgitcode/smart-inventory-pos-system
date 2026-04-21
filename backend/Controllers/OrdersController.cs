@@ -3,50 +3,50 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using backend.Data;     // for AppDbContext
 using backend.Models;   // for Product model
+using backend.DTOs;     // for Order DTOs
 
 namespace backend.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class OrdersController : ControllerBase
-    {
-        private readonly AppDbContext _context;
-
-        public OrdersController(AppDbContext context)
-        {
-            _context = context;
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> CreateOrder(OrderDto order)
-        {
-            foreach (var item in order.Items)
+   [ApiController]
+[Route("api/orders")]
+public class OrdersController : ControllerBase
 {
-    var product = await _context.Products.FindAsync(item.ProductId);
+    private readonly AppDbContext _context;
 
-    if (product == null)
-        return NotFound($"Product {item.ProductId} not found");
+    public OrdersController(AppDbContext context)
+    {
+        _context = context;
+    }
 
-    if (product.Stock < item.Quantity)
-        return BadRequest($"Not enough stock for {product.Name}");
+    [HttpPost]
+    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
+    {
+        var order = new Order
+        {
+            CreatedAt = DateTime.Now,
+            TotalAmount = dto.TotalAmount
+        };
 
-    product.Stock -= item.Quantity;
-}
+        _context.Orders.Add(order);
+        await _context.SaveChangesAsync();
 
-            await _context.SaveChangesAsync();
+        foreach (var item in dto.Items)
+        {
+            _context.OrderItems.Add(new OrderItem
+            {
+                OrderId = order.Id,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity
+            });
 
-            return Ok();
+            var product = await _context.Products.FindAsync(item.ProductId);
+            product.StockQuantity -= item.Quantity;
         }
-    }
 
-    public class OrderDto
-    {
-        public List<OrderItemDto> Items { get; set; }
-    }
+        await _context.SaveChangesAsync();
 
-    public class OrderItemDto
-    {
-        public int ProductId { get; set; }
-        public int Quantity { get; set; }
+        return Ok(order);
     }
+} 
+   
 }

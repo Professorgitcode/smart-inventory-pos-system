@@ -1,7 +1,7 @@
 using backend.Models;
 using backend.Data;
+using backend.DTOs;
 using Microsoft.EntityFrameworkCore;
-
 namespace backend.Services
 {
     public class ProductService
@@ -38,7 +38,7 @@ namespace backend.Services
 
             product.Name = updatedProduct.Name;
             product.Price = updatedProduct.Price;
-            product.Stock = updatedProduct.Stock;
+            product.StockQuantity = updatedProduct.StockQuantity;
 
             await _context.SaveChangesAsync();
             return product;

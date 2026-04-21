@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { DollarSign, Package, BrainCircuit, AlertTriangle, BarChart3 } from "lucide-react";
+import { DollarSign, Package, BrainCircuit, AlertTriangle, BarChart3, AlertCircle } from "lucide-react";
 
 const StatCard = ({ title, value, icon: Icon, theme }) => (
   <div style={{ 
@@ -45,14 +45,19 @@ const Dashboard = ({ theme }) => {
 
       {/* ALERT */}
       {stats.lowStock > 0 && (
-      <div style={{
+      <div style={{ 
+        display: "flex",
+        alignItems: "center",
+        gap: "12px", 
+        color: "#c2410c",
+        border: "1px solid #ffedd5",
         padding: "16px",
         backgroundColor: "#fff7ed",
         borderRadius: "12px",
         marginBottom: "32px"
       }}>
         <AlertTriangle size={22} />
-        Low Stock Alert: {stats.lowStock} products are running low!
+        <span style={{ fontWeight: "600" }}>Low Stock Alert: {stats.lowStock} products require immediate restock.</span>
       </div>
 )}
       {/* STATS */}

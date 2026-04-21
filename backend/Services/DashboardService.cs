@@ -1,5 +1,6 @@
 using backend.Models;
 using backend.Data;
+using backend.DTOs;
 using Microsoft.EntityFrameworkCore;
 public class DashboardService
 {
@@ -22,7 +23,7 @@ public class DashboardService
 
     // LOW STOCK COUNT
     var lowStockCount = await _context.Products
-        .CountAsync(p => p.Stock < 5);
+        .CountAsync(p => p.StockQuantity < 5);
 
     // RECENT ORDERS
     var recentOrders = await _context.Orders

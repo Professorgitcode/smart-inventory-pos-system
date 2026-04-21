@@ -33,18 +33,18 @@ if (app.Environment.IsDevelopment())
 
 app.MapControllers();
 
-app.MapGet("/products", async ([FromServices] ProductService service) =>
+app.MapGet("api/products", async ([FromServices] ProductService service) =>
 {
     return await service.GetAll();
 });
 
-app.MapGet("/products/{id}", async ([FromServices] ProductService service, int id) =>
+app.MapGet("api/products/{id}", async ([FromServices] ProductService service, int id) =>
 {
     var product = await service.GetById(id);
     return product is not null ? Results.Ok(product) : Results.NotFound();
 });
 
-app.MapPost("/products", async (Product product, [FromServices] ProductService service) =>
+app.MapPost("api/products", async (Product product, [FromServices] ProductService service) =>
 {
     // Validation
     if (string.IsNullOrWhiteSpace(product.Name))
@@ -53,7 +53,7 @@ app.MapPost("/products", async (Product product, [FromServices] ProductService s
     if (product.Price <= 0)
         return Results.BadRequest("Price must be greater than 0");
 
-    if (product.Stock < 0)
+    if (product.StockQuantity < 0)
         return Results.BadRequest("Stock cannot be negative");
 
     // Check duplicate ID
@@ -68,13 +68,13 @@ app.MapPost("/products", async (Product product, [FromServices] ProductService s
     return Results.Created($"/products/{product.Id}", product);
 });
 
-app.MapPut("/products/{id}", async (int id, Product updatedProduct, [FromServices] ProductService service) =>
+app.MapPut("api/products/{id}", async (int id, Product updatedProduct, [FromServices] ProductService service) =>
 {
     var result = await service.Update(id, updatedProduct);
     return result is not null ? Results.Ok(result) : Results.NotFound();
 });
 
-app.MapDelete("/products/{id}", async (int id, [FromServices] ProductService service) =>
+app.MapDelete("api/products/{id}", async (int id, [FromServices] ProductService service) =>
 {
     var success = await service.Delete(id);
     return success ? Results.NoContent() : Results.NotFound();

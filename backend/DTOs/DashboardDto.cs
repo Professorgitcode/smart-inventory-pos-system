@@ -1,3 +1,5 @@
+namespace backend.DTOs
+{
 public class DashboardDto
 {
     public decimal TotalSales { get; set; }
@@ -13,4 +15,5 @@ public class RecentOrderDto
     public int OrderId { get; set; }
     public decimal Total { get; set; }
     public DateTime Date { get; set; }
+}
 }

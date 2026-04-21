@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ShoppingCart, Plus, Minus } from "lucide-react";
 
+
 const POS = ({ theme }) => (
+
+
   <div style={{ display: "flex", gap: "24px", height: "100%" }}>
     {/* Left: Product Selection */}
     <div style={{ flex: 2 }}>
@@ -16,6 +19,7 @@ const POS = ({ theme }) => (
         ))}
       </div>
     </div>
+
 
     {/* Right: Cart Panel */}
     <div style={{ flex: 1, backgroundColor: theme.surface, borderRadius: "16px", border: `1px solid ${theme.border}`, display: "flex", flexDirection: "column" }}>

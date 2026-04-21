@@ -4,6 +4,7 @@ using System.Linq;
 using backend.Models;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using backend.DTOs; // for DashboardDto
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controllers
@@ -32,7 +33,7 @@ public class DashboardController : ControllerBase
 
         // LOW STOCK
         var lowStockCount = await _context.Products
-            .CountAsync(p => p.Stock < 5);
+            .CountAsync(p => p.StockQuantity < 5);
 
         // RECENT ORDERS
         var recentOrders = await _context.Orders
