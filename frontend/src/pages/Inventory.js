@@ -4,7 +4,7 @@ import ProductModal from "../components/ProductModal";
 import Toast from "../components/Toast";
 
 const Inventory = ({ theme }) => {
-  const API = "http://localhost:5216/products";
+  const API = "http://localhost:5216/api/products";
 
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");

@@ -33,51 +33,5 @@ if (app.Environment.IsDevelopment())
 
 app.MapControllers();
 
-app.MapGet("api/products", async ([FromServices] ProductService service) =>
-{
-    return await service.GetAll();
-});
-
-app.MapGet("api/products/{id}", async ([FromServices] ProductService service, int id) =>
-{
-    var product = await service.GetById(id);
-    return product is not null ? Results.Ok(product) : Results.NotFound();
-});
-
-app.MapPost("api/products", async (Product product, [FromServices] ProductService service) =>
-{
-    // Validation
-    if (string.IsNullOrWhiteSpace(product.Name))
-        return Results.BadRequest("Product Name is required!");
-
-    if (product.Price <= 0)
-        return Results.BadRequest("Price must be greater than 0");
-
-    if (product.StockQuantity < 0)
-        return Results.BadRequest("Stock cannot be negative");
-
-    // Check duplicate ID
-    var products = await service.GetAll();
-    var existing = products.FirstOrDefault(p => p.Id == product.Id);
-
-    if (existing != null)
-        return Results.BadRequest("Product with this ID already exists");
-
-    await service.Add(product);
-
-    return Results.Created($"/products/{product.Id}", product);
-});
-
-app.MapPut("api/products/{id}", async (int id, Product updatedProduct, [FromServices] ProductService service) =>
-{
-    var result = await service.Update(id, updatedProduct);
-    return result is not null ? Results.Ok(result) : Results.NotFound();
-});
-
-app.MapDelete("api/products/{id}", async (int id, [FromServices] ProductService service) =>
-{
-    var success = await service.Delete(id);
-    return success ? Results.NoContent() : Results.NotFound();
-});
 app.UseCors("AllowReact");
 app.Run();
