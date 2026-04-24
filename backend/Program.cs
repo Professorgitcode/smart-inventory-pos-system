@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddOpenApi();
+builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=inventory.db"));

@@ -18,15 +18,33 @@ const Inventory = ({ theme }) => {
 
   // TOAST STATE
   const [toast, setToast] = useState({
+  isVisible: false,
+  header: "",
+  message: "",
+  type: "info"
+});
+
+  const triggerToast = (
+  header,
+  message,
+  type = "info"
+) => {
+  setToast({
     isVisible: false,
-    message: "",
-    type: "success"
+    header,
+    message,
+    type
   });
 
-  const showToast = (message, type = "success") => {
-    setToast({ isVisible: true, message, type });
-  };
-
+  setTimeout(() => {
+    setToast({
+      isVisible: true,
+      header,
+      message,
+      type
+    });
+  }, 10);
+};
   // ================= FETCH =================
   const fetchProducts = async () => {
     try {
@@ -34,7 +52,11 @@ const Inventory = ({ theme }) => {
       const data = await res.json();
       setProducts(data);
     } catch {
-      showToast("Failed to fetch products", "error");
+     triggerToast(
+  "Server Error",
+  "Unable to fetch inventory records.",
+  "error"
+);
     }
   };
 
@@ -56,7 +78,11 @@ const Inventory = ({ theme }) => {
           })
         });
 
-        showToast("Product added successfully");
+       triggerToast(
+  "Product Added",
+  "New product added successfully.",
+  "success"
+);
       } else {
         await fetch(`${API}/${modal.data.id}`, {
           method: "PUT",
@@ -69,14 +95,27 @@ const Inventory = ({ theme }) => {
           })
         });
 
-        showToast("Product updated successfully");
+        triggerToast(
+  "Product Updated",
+  "Product details updated successfully.",
+  "info"
+);
       }
 
       setModal({ isOpen: false, mode: "add", data: null });
       fetchProducts();
 
     } catch {
-      showToast("Operation failed", "error");
+     triggerToast(
+  "Validation Error",
+  "Product name cannot be empty.",
+  "error"
+);
+triggerToast(
+  "Invalid Price",
+  "Price must be greater than zero.",
+  "error"
+);
     }
   };
 
@@ -87,11 +126,19 @@ const Inventory = ({ theme }) => {
         method: "DELETE"
       });
 
-      showToast("Product deleted");
+     triggerToast(
+  "Product Deleted",
+  "Product removed from inventory.",
+  "error"
+);
       fetchProducts();
 
     } catch {
-      showToast("Delete failed", "error");
+      triggerToast(
+  "Server Error",
+  "Unable to delete product from inventory records.",
+  "error"
+);
     }
   };
 
@@ -110,9 +157,18 @@ const Inventory = ({ theme }) => {
 
       {/* TOAST */}
       <Toast
-        {...toast}
-        onClose={() => setToast({ ...toast, isVisible: false })}
-      />
+  header={toast.header}
+  message={toast.message}
+  type={toast.type}
+  isVisible={toast.isVisible}
+  theme={theme}
+  onClose={() =>
+    setToast(prev => ({
+      ...prev,
+      isVisible: false
+    }))
+  }
+/>
 
       {/* HEADER */}
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "24px" }}>

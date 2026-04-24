@@ -1,52 +1,37 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using backend.Data;     // for AppDbContext
-using backend.Models;   // for Product model
-using backend.DTOs;     // for Order DTOs
+using backend.Services;
+using backend.DTOs;
 
-namespace backend.Controllers
-{
-   [ApiController]
+[ApiController]
 [Route("api/orders")]
 public class OrdersController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly OrderService _orderService;
 
-    public OrdersController(AppDbContext context)
+    public OrdersController(OrderService orderService)
     {
-        _context = context;
+        _orderService = orderService;
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
+    public async Task<IActionResult> Create(CreateOrderDto dto)
     {
-        var order = new Order
+        try
         {
-            CreatedAt = DateTime.Now,
-            TotalAmount = dto.TotalAmount
-        };
+            var order = await _orderService.CreateOrder(dto);
 
-        _context.Orders.Add(order);
-        await _context.SaveChangesAsync();
+            if (order == null)
+                return BadRequest("Invalid product");
 
-        foreach (var item in dto.Items)
-        {
-            _context.OrderItems.Add(new OrderItem
-            {
-                OrderId = order.Id,
-                ProductId = item.ProductId,
-                Quantity = item.Quantity
-            });
-
-            var product = await _context.Products.FindAsync(item.ProductId);
-            product.StockQuantity -= item.Quantity;
+            return Ok(return Ok(new
+{
+    message = "Order placed successfully",
+    orderId = order.Id
+}););
         }
-
-        await _context.SaveChangesAsync();
-
-        return Ok(order);
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
-} 
-   
 }

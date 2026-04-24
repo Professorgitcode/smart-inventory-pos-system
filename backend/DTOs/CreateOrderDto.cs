@@ -9,10 +9,8 @@ using backend.DTOs;
 using System.ComponentModel.DataAnnotations;
 namespace backend.DTOs
 {
-    public class CreateOrderDto
+   public class CreateOrderDto
 {
-    [Range(0, double.MaxValue, ErrorMessage = "Total amount must be a positive number")]
-    public decimal TotalAmount { get; set; }
     public List<OrderItemDto> Items { get; set; }
 }
 
