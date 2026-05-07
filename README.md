@@ -11,53 +11,60 @@ A full-stack inventory and point-of-sale (POS) system built with:
 ## Features Implemented
 
 ### Inventory Management
-- View all products
-- Add new product (Modal UI)
-- Edit existing product
-- Delete product
-- Search/filter products (frontend)
+- Add, edit, delete products
+- Real-time stock updates
+- Stock quantity tracking
+- Inventory search and filtering
 
-### Backend API (RESTful)
-- GET /api/products
-- POST /api/products
-- PUT /api/products/{id}
-- DELETE /api/products/{id}
+### POS System
+- Cart management
+- Checkout workflow
+- Payment modal
+- Receipt generation
+- Automatic stock deduction
+- Oversell prevention
 
-### UI Enhancements
-- Modal-based Add/Edit (ProductModal)
-- Toast notifications (success/error/info)
-- Clean dashboard layout
+### Sales Analytics
+- Revenue tracking
+- Sales reporting dashboard
+- Recent orders monitoring
+- Export reports (PDF, CSV, Excel)
+- Sales trend visualization
 
----
+### Smart Warehouse Intelligence
+- Fast-moving product ranking
+- Dead stock detection
+- Inventory health monitoring
+- Reorder suggestions
+- Stock movement analytics
+- Warehouse KPI dashboard
+- Demand velocity analysis
 
-## Architecture
+### Dashboard Analytics
+- Revenue charts
+- Inventory movement visualization
+- Operational warehouse metrics
+- Business intelligence widgets
 
-### Backend Structure
+### Backend Architecture
+- ASP.NET Core Web API
+- Service-based architecture
+- DTO pattern implementation
+- SQLite + EF Core
+- RESTful API integration
 
-backend/
-│
-├── Controllers/
-│ └── ProductsController.cs
-│
-├── Services/
-│ └── ProductService.cs
-│
-├── Models/
-│ └── Product.cs
-│
-├── DTOs/
-│ └── ProductDto.cs
-│
-├── Data/
-│ └── AppDbContext.cs
+## Project Status
 
+Current Phase:
+Smart Warehouse Intelligence & Analytics System
 
-### Architecture Pattern
-- Controller → DTO → Service → Model → Database
+The project has evolved from a traditional POS system into an intelligent inventory and warehouse analytics platform capable of:
+- inventory intelligence
+- operational analytics
+- warehouse monitoring
+- demand analysis
+- procurement insight generation
 
----
-
-## Status
 🟢 Backend Complete  
 🟡 Frontend In Progress 
 
@@ -69,44 +76,48 @@ backend/
 - Git & GitHub workflow
 - Debugging real-world errors
 
-## Upcoming Features
-- POS (Point of Sale) module
-- Sales tracking
-- Authentication (Login system)
-- Reports & analytics
-- AI demand prediction
-- Sales reports page
-- Multi-user support
+## Future Improvements
+
+- AI demand forecasting
+- ML.NET predictive analytics
+- Seasonal sales prediction
+- Smart procurement engine
+- Multi-user authentication
+- Role-based access control
+- Barcode scanning
+- Supplier management
+- Cloud deployment
+- Real-time notifications
 
 ## Setup Instructions (How to Run)
 
 ### Backend (ASP.NET Core)
 
 ``bash
-cd backend
-dotnet restore
-dotnet build
-dotnet ef database update
-dotnet run
+- cd backend
+- dotnet restore
+- dotnet build
+- dotnet ef database update
+- dotnet run
 
 Backend runs on:
 
 http://localhost:5216
 
 ### Frontend (React)
-cd frontend
-npm install
-npm start
+- cd frontend
+- npm install
+- npm start
 
 Frontend runs on:
 
 http://localhost:3000
 
-API Base URL
+API Base URL:
 http://localhost:5216/api/products
 
 ## Live Updates
-Follow development on LinkedIn
+Follow development on LinkedIn: 
 www.linkedin.com/in/albert-ryan-0510marc
 
 
