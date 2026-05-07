@@ -37,15 +37,31 @@ public class DashboardController : ControllerBase
 
         // RECENT ORDERS
         var recentOrders = await _context.Orders
-            .OrderByDescending(o => o.Id)
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Product)
+            .OrderByDescending(o => o.CreatedAt)
             .Take(5)
             .Select(o => new RecentOrderDto
             {
                 OrderId = o.Id,
-                Total = o.Items.Sum(i => i.Quantity * i.Product.Price),
-                Date = DateTime.Now // Replace later with real CreatedAt
+                Amount = o.TotalAmount,      // use Order model field
+                CreatedAt = o.CreatedAt,     // use Order model field
+                Status = "Completed"
             })
             .ToListAsync();
+            
+            // SALES TREND (Daily Aggregation)
+      var salesTrend = await _context.Orders
+    .Where(o => o.CreatedAt > DateTime.UtcNow.AddYears(-10)) // filter invalid dates
+    .GroupBy(o => o.CreatedAt.Date)
+    .OrderBy(g => g.Key)
+    .Select(g => new SalesTrendDto
+    {
+        Date = g.Key.ToString("yyyy-MM-dd"),
+        TotalRevenue = g.Sum(x => x.TotalAmount),
+          OrderCount = g.Count()
+    })
+    .ToListAsync();
 
         var response = new DashboardDto
         {
@@ -53,7 +69,8 @@ public class DashboardController : ControllerBase
             TotalProducts = totalProducts,
             LowStockCount = lowStockCount,
             Forecast = "+15% Demand", // placeholder for AI
-            RecentOrders = recentOrders
+            RecentOrders = recentOrders,
+            SalesTrend = salesTrend // ✅ ADD THIS
         };
 
         return Ok(response);

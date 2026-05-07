@@ -1,16 +1,15 @@
 using backend.Data;
-using backend.Models;
 using backend.Services;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddOpenApi();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<InventoryInsightService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<ReportExportService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=inventory.db"));
 builder.Services.AddControllers();

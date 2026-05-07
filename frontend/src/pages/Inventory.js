@@ -111,11 +111,7 @@ const Inventory = ({ theme }) => {
   "Product name cannot be empty.",
   "error"
 );
-triggerToast(
-  "Invalid Price",
-  "Price must be greater than zero.",
-  "error"
-);
+
     }
   };
 

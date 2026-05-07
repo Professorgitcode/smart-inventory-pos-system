@@ -2,7 +2,6 @@ using backend.Data;
 using backend.Models;
 using backend.DTOs;
 using Microsoft.EntityFrameworkCore;
-
 public class OrderService
 {
     private readonly AppDbContext _context;
@@ -16,9 +15,10 @@ public class OrderService
     {
         var order = new Order
         {
+            CreatedAt = DateTime.UtcNow, // ✅ FORCE SET
             Items = new List<OrderItem>()
         };
-
+        
         decimal total = 0;
 
         foreach (var item in dto.Items)

@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import Inventory from "./pages/Inventory";
 import POS from "./pages/POS";
 import SalesReports from "./pages/SalesReports";
+import InventoryInsights from "./pages/InventoryInsights";
 
 const App = () => {
   const [activePage, setActivePage] = useState("dashboard");
@@ -38,6 +39,7 @@ const App = () => {
           {activePage === "inventory" && <Inventory theme={theme} />}
           {activePage === "pos" && <POS theme={theme} />}
           {activePage === "sales-reports" && <SalesReports theme={theme} />}
+          {activePage === "inventory-insights" && <InventoryInsights theme={theme} />}
         </main>
       </div>
     </div>

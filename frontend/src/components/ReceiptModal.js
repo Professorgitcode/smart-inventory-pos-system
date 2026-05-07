@@ -202,7 +202,7 @@ const ReceiptModal = ({
             </h2>
 
             <p style={{ margin: 0, fontSize: "0.75rem" }}>
-              Mobile Repair & Sales
+              Mobile Phones & -Accessories Sales
             </p>
 
             <p style={{ margin: 0, fontSize: "0.75rem" }}>

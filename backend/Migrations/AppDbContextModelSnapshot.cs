@@ -89,7 +89,7 @@ namespace backend.Migrations
                         .HasForeignKey("OrderId");
 
                     b.HasOne("backend.Models.Product", "Product")
-                        .WithMany()
+                        .WithMany("OrderItems")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -100,6 +100,11 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Models.Order", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("backend.Models.Product", b =>
+                {
+                    b.Navigation("OrderItems");
                 });
 #pragma warning restore 612, 618
         }

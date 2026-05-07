@@ -29,12 +29,23 @@ const CreatePaymentModal = ({
   const [discount, setDiscount] = useState(0);
   const [tax, setTax] = useState(0);
 
+  const resetForm = () => {
+  setCustomerName("");
+  setReceivedAmount(0);
+  setPaymentAmount(totalAmount);
+  setPaymentMethod("Cash");
+  setNotes("");
+  setDiscount(0);
+  setTax(0);
+};
   // Sync payment amount if totalAmount changes (e.g., cart updated)
   useEffect(() => {
-    setPaymentAmount(totalAmount);
-  }, [totalAmount]);
+  if (isOpen) {
+    resetForm();
+  }
+}, [isOpen, totalAmount]); 
 
-  if (!isOpen) return null;
+ if (!isOpen) return null;
 
   // Derived Calculations
   const finalPayable = Math.max(0, parseFloat(paymentAmount) - parseFloat(discount) + parseFloat(tax));
@@ -42,26 +53,32 @@ const CreatePaymentModal = ({
   const isInsufficient = receivedAmount < finalPayable;
 
   const handleConfirm = () => {
-    if (cartItems.length === 0 || isInsufficient) return;
+  if (cartItems.length === 0 || isInsufficient) return;
 
-    const paymentData = {
-      orderDate: new Date().toISOString(),
-      customer: customerName || "Walk-in Customer",
-      items: cartItems,
-      financials: {
-        subtotal: totalAmount,
-        discount: parseFloat(discount),
-        tax: parseFloat(tax),
-        finalPayable: finalPayable,
-        received: parseFloat(receivedAmount),
-        change: changeReturn
-      },
-      paymentMethod,
-      notes
-    };
-
-    onConfirmPayment(paymentData);
+  const paymentData = {
+    orderDate: new Date().toISOString(),
+    customer: customerName || "Walk-in Customer",
+    items: cartItems,
+    financials: {
+      subtotal: totalAmount,
+      discount: parseFloat(discount),
+      tax: parseFloat(tax),
+      finalPayable: finalPayable,
+      received: parseFloat(receivedAmount),
+      change: changeReturn
+    },
+    paymentMethod,
+    notes
   };
+
+  onConfirmPayment(paymentData);
+
+  // Reset form for next transaction
+  resetForm();
+
+  // Close modal
+  onClose();
+};
 
   // Styles
   const overlayStyle = {
@@ -251,7 +268,10 @@ const CreatePaymentModal = ({
         {/* Footer */}
         <div style={{ padding: "20px 24px", borderTop: `1px solid ${theme.border}`, display: "flex", gap: "12px", justifyContent: "flex-end" }}>
           <button 
-            onClick={onClose}
+            onClick={() => {
+                resetForm();
+                onClose();
+            }}
             style={{ padding: "12px 24px", borderRadius: "10px", border: `1px solid ${theme.border}`, backgroundColor: "transparent", color: theme.text, cursor: "pointer", fontWeight: "600" }}
           >
             Cancel

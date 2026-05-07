@@ -23,11 +23,11 @@ public class OrdersController : ControllerBase
             if (order == null)
                 return BadRequest("Invalid product");
 
-            return Ok(return Ok(new
+            return Ok(new
 {
     message = "Order placed successfully",
     orderId = order.Id
-}););
+});
         }
         catch (Exception ex)
         {

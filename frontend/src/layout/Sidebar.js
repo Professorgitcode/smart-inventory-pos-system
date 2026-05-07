@@ -8,6 +8,7 @@ const Sidebar = ({ activePage, setActivePage, theme }) => {
     { id: "inventory", label: "Inventory", icon: Package },
     { id: "pos", label: "POS System", icon: ShoppingCart },
     { id: "sales-reports", label: "Sales Reports", icon: LucideGitGraph },
+    { id: "inventory-insights", label: "Inventory Insights", icon: LucideTrendingUpDown }
   ];
 
   return (
@@ -45,6 +46,7 @@ const Sidebar = ({ activePage, setActivePage, theme }) => {
         <LogOut size={20} /> <span>Logout</span>
       </div>
     </div>
+    
   );
 };
 

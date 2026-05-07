@@ -1,234 +1,626 @@
-import React from "react";
-import { 
-  TrendingUp, 
-  Clock, 
-  DollarSign, 
-  ShoppingBag, 
-  BarChart3, 
-  Calendar, 
-  CheckCircle2, 
-  Timer,
+import React, { useEffect, useState } from "react";
+import Toast from "../components/Toast";
+import {
+  TrendingUp,
+  DollarSign,
+  ShoppingBag,
+  BarChart3,
+  CheckCircle2,
   ChevronRight,
   PackageCheck
 } from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid
+} from "recharts";
 
-// --- Sub-components for Clean Structure ---
+const REPORT_API = "http://localhost:5216/api/reports";
 
+// ---------------- Analytics Card ----------------
 const AnalyticsCard = ({ title, value, icon: Icon, color, theme }) => (
-  <div style={{
-    backgroundColor: theme.surface,
-    padding: "24px",
-    borderRadius: "16px",
-    border: `1px solid ${theme.border}`,
-    boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px"
-  }}>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <span style={{ color: theme.textMuted, fontSize: "0.85rem", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>{title}</span>
-      <div style={{ color: color, backgroundColor: `${color}15`, padding: "8px", borderRadius: "10px" }}>
+  <div
+    style={{
+      backgroundColor: theme.surface,
+      padding: "24px",
+      borderRadius: "16px",
+      border: `1px solid ${theme.border}`,
+      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+      flex: 1,
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px"
+    }}
+  >
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center"
+      }}
+    >
+      <span
+        style={{
+          color: theme.muted,
+          fontSize: "0.85rem",
+          fontWeight: "600",
+          textTransform: "uppercase",
+          letterSpacing: "0.5px"
+        }}
+      >
+        {title}
+      </span>
+
+      <div
+        style={{
+          color: color,
+          backgroundColor: `${color}15`,
+          padding: "8px",
+          borderRadius: "10px"
+        }}
+      >
         <Icon size={18} />
       </div>
     </div>
-    <h3 style={{ margin: 0, fontSize: "1.5rem", fontWeight: "700", color: theme.text }}>{value}</h3>
+
+    <h3
+      style={{
+        margin: 0,
+        fontSize: "1.5rem",
+        fontWeight: "700",
+        color: theme.text
+      }}
+    >
+      {value}
+    </h3>
   </div>
 );
 
-const OrderRow = ({ id, time, amount, status, theme }) => {
-  const getStatusStyle = (s) => {
-    switch (s) {
-      case "Completed": return { bg: "#f0fdf4", text: "#166534", icon: <CheckCircle2 size={14} /> };
-      case "Processing": return { bg: "#eff6ff", text: "#1e40af", icon: <Timer size={14} /> };
-      default: return { bg: "#f1f5f9", text: "#475569", icon: <Clock size={14} /> };
-    }
+// ---------------- Order Row ----------------
+const OrderRow = ({ order, theme }) => {
+  const completedStyle = {
+    bg: "#dcfce7",
+    text: "#166534"
   };
 
-  const statusStyle = getStatusStyle(status);
-
   return (
-    <div style={{
-      display: "flex",
-      alignItems: "center",
-      padding: "12px 0",
-      borderBottom: `1px solid ${theme.border}`,
-      gap: "12px"
-    }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        padding: "12px 0",
+        borderBottom: `1px solid ${theme.border}`,
+        gap: "12px"
+      }}
+    >
       <div style={{ flex: 1 }}>
-        <p style={{ margin: 0, fontSize: "0.9rem", fontWeight: "600", color: theme.text }}>Order #{id}</p>
-        <p style={{ margin: 0, fontSize: "0.75rem", color: theme.textMuted }}>{time}</p>
+        <p
+          style={{
+            margin: 0,
+            fontSize: "0.9rem",
+            fontWeight: "600",
+            color: theme.text
+          }}
+        >
+          Order #{order.orderId}
+        </p>
+
+        <p
+          style={{
+            margin: 0,
+            fontSize: "0.75rem",
+            color: theme.muted
+          }}
+        >
+          {new Date(order.createdAt).toLocaleString()}
+        </p>
       </div>
+
       <div style={{ textAlign: "right", marginRight: "12px" }}>
-        <p style={{ margin: 0, fontSize: "0.9rem", fontWeight: "700", color: theme.text }}>${amount}</p>
-        <div style={{ 
-          display: "inline-flex", 
-          alignItems: "center", 
-          gap: "4px", 
-          padding: "2px 8px", 
-          borderRadius: "12px", 
-          backgroundColor: statusStyle.bg, 
-          color: statusStyle.text,
-          fontSize: "0.7rem",
-          fontWeight: "600",
-          marginTop: "4px"
-        }}>
-          {statusStyle.icon} {status}
+        <p
+          style={{
+            margin: 0,
+            fontSize: "0.9rem",
+            fontWeight: "700",
+            color: theme.text
+          }}
+        >
+          ${order.amount}
+        </p>
+
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "4px",
+            padding: "2px 8px",
+            borderRadius: "12px",
+            backgroundColor: completedStyle.bg,
+            color: completedStyle.text,
+            fontSize: "0.7rem",
+            fontWeight: "600",
+            marginTop: "4px"
+          }}
+        >
+          <CheckCircle2 size={14} />
+          Completed
         </div>
       </div>
     </div>
   );
 };
 
-// --- Main Page Component ---
+// ---------------- Main Component ----------------
+const SalesReports = ({ theme }) => {
+  const [reportData, setReportData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-const SalesReports = ({ theme = { 
-  bg: "#f8fafc", 
-  surface: "#ffffff", 
-  text: "#0f172a", 
-  textMuted: "#64748b", 
-  border: "#e2e8f0", 
-  primary: "#2563eb" 
-} }) => {
-  
-  const orders = [
-    { id: "8421", time: "2 mins ago", amount: "125.00", status: "Completed" },
-    { id: "8420", time: "15 mins ago", amount: "42.50", status: "Completed" },
-    { id: "8419", time: "1 hour ago", amount: "210.00", status: "Processing" },
-    { id: "8418", time: "3 hours ago", amount: "89.99", status: "Completed" },
-  ];
+  // Date Filters
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  // Toast State
+  const [toast, setToast] = useState({
+    isVisible: false,
+    header: "",
+    message: "",
+    type: "info"
+  });
+
+  const triggerToast = (header, message, type = "info") => {
+    setToast({
+      isVisible: false,
+      header,
+      message,
+      type
+    });
+
+    setTimeout(() => {
+      setToast({
+        isVisible: true,
+        header,
+        message,
+        type
+      });
+    }, 10);
+  };
+
+  // ---------------- Fetch Report ----------------
+  const fetchSalesReport = async () => {
+    try {
+      setLoading(true);
+
+      let url = REPORT_API;
+
+      if (startDate && endDate) {
+        url += `?startDate=${startDate}&endDate=${endDate}`;
+      }
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch report");
+      }
+
+      const data = await response.json();
+
+      setReportData(data);
+    } catch (error) {
+      console.error(error);
+
+      triggerToast(
+        "Report Error",
+        "Failed to fetch sales report data.",
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSalesReport();
+  }, [startDate, endDate]);
+
+  // ---------------- Export ----------------
+  const handleExport = async (type) => {
+    try {
+      const response = await fetch(
+        `${REPORT_API}/export/${type}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Export failed");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+
+      a.download = `sales-report.${
+        type === "excel" ? "xlsx" : type
+      }`;
+
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      window.URL.revokeObjectURL(url);
+
+      triggerToast(
+        "Export Success",
+        `${type.toUpperCase()} report exported successfully.`,
+        "success"
+      );
+    } catch (error) {
+      console.error(error);
+
+      triggerToast(
+        "Export Failed",
+        `Failed to export ${type.toUpperCase()} report.`,
+        "error"
+      );
+    }
+  };
+
+  const historicalData =
+  reportData?.salesTrend?.map(item => ({
+    date: item.date,
+    revenue: item.totalRevenue,
+    orders: item.orderCount
+  })) || [];
+
+const futureData =
+  reportData?.forecast?.map(item => ({
+    date: item.date,
+    forecast: item.predictedRevenue
+  })) || [];
+
+const chartData = [
+  ...historicalData,
+  ...futureData
+];
+
+  const forecastData =
+  reportData?.forecast?.map(item => ({
+    date: item.date,
+    forecast: item.predictedRevenue
+  })) || [];
+
+  if (loading) {
+    return (
+      <div style={{ padding: "32px", color: theme.text }}>
+        Loading Sales Reports...
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding: "32px", maxWidth: "1400px", margin: "0 auto", fontFamily: "Inter, system-ui, sans-serif" }}>
-      
-      {/* Header */}
-      <div style={{ marginBottom: "32px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <div>
-          <h1 style={{ fontSize: "1.875rem", fontWeight: "800", color: theme.text, margin: 0, letterSpacing: "-0.5px" }}>Sales Analytics</h1>
-          <p style={{ color: theme.textMuted, margin: "4px 0 0 0" }}>Detailed financial performance and forecasting.</p>
-        </div>
-        <div style={{ display: "flex", gap: "12px" }}>
-          <button style={{ 
-            padding: "10px 16px", borderRadius: "10px", border: `1px solid ${theme.border}`, 
-            backgroundColor: theme.surface, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px",
-            fontSize: "0.9rem", fontWeight: "600", color: theme.text
-          }}>
-            <Calendar size={16} /> Last 30 Days
-          </button>
-        </div>
-      </div>
+    <>
+      {/* Toast */}
+      <Toast
+        header={toast.header}
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        theme={theme}
+        onClose={() =>
+          setToast((prev) => ({
+            ...prev,
+            isVisible: false
+          }))
+        }
+      />
 
-      {/* Top Section: Grid 2:1 */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "24px", marginBottom: "32px" }}>
-        
-        {/* Revenue Forecast Card */}
-        <div style={{
-          backgroundColor: theme.surface,
-          padding: "24px",
-          borderRadius: "20px",
-          border: `1px solid ${theme.border}`,
-          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)"
-        }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-            <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: "700", color: theme.text }}>Revenue Forecast</h3>
-            <div style={{ color: "#2563eb", fontSize: "0.8rem", fontWeight: "700", backgroundColor: "#eff6ff", padding: "4px 10px", borderRadius: "8px" }}>
-              ML.NET Powered
-            </div>
-          </div>
-          
-          <div style={{ 
-            height: "300px", 
-            backgroundColor: "#f8fafc", 
-            borderRadius: "12px", 
-            border: `2px dashed ${theme.border}`,
+      <div
+        style={{
+          padding: "32px",
+          maxWidth: "1700px",
+          margin: "0 auto",
+          fontFamily: "Inter, system-ui, sans-serif"
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            marginBottom: "32px",
             display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            color: theme.textMuted
-          }}>
-            <BarChart3 size={40} style={{ marginBottom: "12px", opacity: 0.4 }} />
-            <p style={{ fontSize: "0.9rem", fontWeight: "500" }}>Predictive Analytics Visualization Engine</p>
+            justifyContent: "space-between",
+            alignItems: "flex-end"
+          }}
+        >
+          <div>
+            <h1
+              style={{
+                margin: 0,
+                fontSize: "1.9rem",
+                fontWeight: "800",
+                color: theme.text,
+                letterSpacing: "-0.5px"
+              }}
+            >
+              Sales Analytics
+            </h1>
+
+            <p style={{ color: theme.muted }}>
+              Detailed financial performance and forecasting.
+            </p>
+          </div>
+
+          <div style={{ display: "flex", gap: "12px" }}>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              style={{
+                padding: "10px 16px",
+                borderRadius: "10px",
+                border: `1px solid ${theme.border}`,
+                backgroundColor: theme.surface,
+                cursor: "pointer", 
+                display: "flex", 
+                alignItems: "center", 
+                gap: "8px",
+                fontSize: "0.9rem", 
+                fontWeight: "600", 
+                color: theme.text
+              }}
+            />
+
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              style={{
+                padding: "10px 16px",
+                borderRadius: "10px",
+                border: `1px solid ${theme.border}`,
+                backgroundColor: theme.surface,
+                cursor: "pointer", 
+                display: "flex", 
+                alignItems: "center", 
+                gap: "8px",
+                fontSize: "0.9rem", 
+                fontWeight: "600", 
+                color: theme.text
+              }}
+            />
           </div>
         </div>
 
-        {/* Recent Orders Card */}
-        <div style={{
-          backgroundColor: theme.surface,
-          padding: "24px",
-          borderRadius: "20px",
-          border: `1px solid ${theme.border}`,
-          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
-          display: "flex",
-          flexDirection: "column"
-        }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-            <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: "700", color: theme.text }}>Recent Orders</h3>
-            <button style={{ background: "none", border: "none", color: theme.primary, fontWeight: "600", fontSize: "0.85rem", cursor: "pointer" }}>
-              View All
+        {/* Top Grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "2fr 1fr",
+            gap: "24px",
+            marginBottom: "32px"
+          }}
+        >
+          {/* Forecast Card */}
+          <div
+            style={{
+              backgroundColor: theme.surface,
+              padding: "24px",
+              borderRadius: "20px",
+              border: `1px solid ${theme.border}`,
+              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)"
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "24px",
+                alignItems: "center"
+              }}
+            >
+              <h3 style={{ margin: 0,fontSize: "1.1rem", fontWeight: "700", color: theme.text }}>
+                Revenue Forecast
+              </h3>
+
+              <div
+                style={{
+                 color: "#2563eb", 
+                 fontSize: "0.8rem", 
+                 fontWeight: "700", 
+                 backgroundColor: "#eff6ff", 
+                 padding: "4px 10px", 
+                 borderRadius: "8px"
+                }}
+              >
+                ML.NET Powered
+              </div>
+            </div>
+
+            <div
+  style={{
+    height: "420px",
+                backgroundColor: "#f8fafc",
+                borderRadius: "12px",
+                border: `2px dashed ${theme.border}`,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                color: theme.muted
+  }}
+>
+  {chartData.length === 0 ? (
+    <div
+      style={{
+        display: "flex",
+        height: "100%",
+        alignItems: "center",
+        justifyContent: "center",
+        color: theme.muted
+      }}
+    >
+      No analytics data available
+    </div>
+  ) : (
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={chartData}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="date" />
+        <YAxis />
+        <Tooltip />
+
+        {/* Revenue */}
+        <Line
+          type="monotone"
+          dataKey="revenue"
+          stroke="#3b82f6"
+          strokeWidth={2}
+        />
+
+        {/* Orders */}
+        <Line
+          type="monotone"
+          dataKey="orders"
+          stroke="#10b981"
+          strokeWidth={2}
+        />
+
+        <Line
+          type="monotone"
+          dataKey="forecast"
+          stroke="rgb(245, 158, 11)"
+          strokeWidth={2}
+          strokeDasharray="5 5"
+/>
+      </LineChart>
+    </ResponsiveContainer>
+  )}
+</div>
+          </div>
+
+          {/* Recent Orders */}
+          <div
+            style={{
+              backgroundColor: theme.surface,
+              padding: "24px",
+              borderRadius: "20px",
+              border: `1px solid ${theme.border}`,
+              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+              display: "flex",
+              flexDirection: "column"
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}
+            >
+              <h3 style={{ margin: 0,fontSize: "1.1rem", fontWeight: "700", color: theme.text }}>
+                Recent Orders
+              </h3>
+
+              <div style={{ backgroundColor: "none", border: "none", color: theme.primary, fontWeight: "600", fontSize: "0.85rem", cursor: "pointer", display: "flex", gap: "12px" }}>
+                <button onClick={() => handleExport("pdf")}>
+                  Export PDF
+                </button>
+
+                <button onClick={() => handleExport("csv")}>
+                  Export CSV
+                </button>
+
+                <button onClick={() => handleExport("excel")}>
+                  Export Excel
+                </button>
+              </div>
+            </div>
+
+            <div style={{ flex: 1, marginTop: "20px" }}>
+              {reportData?.recentOrders?.length > 0 ? (
+                reportData.recentOrders.map((order) => (
+                  <OrderRow
+                    key={order.orderId}
+                    order={order}
+                    theme={theme}
+                  />
+                ))
+              ) : (
+                <p style={{ color: theme.muted }}>
+                  No recent orders found.
+                </p>
+              )}
+            </div>
+
+            <button
+              style={{
+                marginTop: "16px",
+                width: "100%",
+                padding: "12px",
+                borderRadius: "10px",
+                border: "none",
+                backgroundColor: "#f1f5f9",
+                color: "#475569",
+                fontWeight: "600",
+                fontSize: "0.85rem",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px"
+              }}
+            >
+              Download Daily Log
+              <ChevronRight size={14} />
             </button>
           </div>
-          
-          <div style={{ flex: 1 }}>
-            {orders.map((order, idx) => (
-              <OrderRow key={idx} {...order} theme={theme} />
-            ))}
-          </div>
+        </div>
 
-          <button style={{
-            marginTop: "16px",
-            width: "100%",
-            padding: "12px",
-            borderRadius: "10px",
-            border: "none",
-            backgroundColor: "#f1f5f9",
-            color: "#475569",
-            fontWeight: "600",
-            fontSize: "0.85rem",
-            cursor: "pointer",
+        {/* Bottom Cards */}
+        <div
+          style={{
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px"
-          }}>
-            Download Daily Log <ChevronRight size={14} />
-          </button>
+            gap: "24px",
+            flexWrap: "wrap"
+          }}
+        >
+          <AnalyticsCard
+            title="Today Revenue"
+            value={`$${reportData?.todayRevenue || 0}`}
+            icon={DollarSign}
+            color="#10b981"
+            theme={theme}
+          />
+
+          <AnalyticsCard
+            title="Weekly Revenue"
+            value={`$${reportData?.weeklyRevenue || 0}`}
+            icon={TrendingUp}
+            color="#3b82f6"
+            theme={theme}
+          />
+
+          <AnalyticsCard
+            title="Total Orders"
+            value={reportData?.totalOrders || 0}
+            icon={ShoppingBag}
+            color="#8b5cf6"
+            theme={theme}
+          />
+
+          <AnalyticsCard
+            title="Best Seller"
+            value={reportData?.bestSeller || "No sales yet"}
+            icon={PackageCheck}
+            color="#f59e0b"
+            theme={theme}
+          />
         </div>
       </div>
-
-      {/* Bottom Section: Analytics Summary */}
-      <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
-        <AnalyticsCard 
-          title="Today Revenue" 
-          value="$1,420.50" 
-          icon={DollarSign} 
-          color="#10b981" 
-          theme={theme} 
-        />
-        <AnalyticsCard 
-          title="Weekly Revenue" 
-          value="$8,942.00" 
-          icon={TrendingUp} 
-          color="#3b82f6" 
-          theme={theme} 
-        />
-        <AnalyticsCard 
-          title="Total Orders" 
-          value="1,240" 
-          icon={ShoppingBag} 
-          color="#8b5cf6" 
-          theme={theme} 
-        />
-        <AnalyticsCard 
-          title="Best Seller" 
-          value="Smartphone X" 
-          icon={PackageCheck} 
-          color="#f59e0b" 
-          theme={theme} 
-        />
-      </div>
-
-    </div>
+    </>
   );
 };
 
