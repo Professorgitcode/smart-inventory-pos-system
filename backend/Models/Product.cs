@@ -9,5 +9,6 @@ public class Product
     public int StockQuantity { get; set; }
 
     public List<OrderItem> OrderItems { get; set; }
+    
 }
 }

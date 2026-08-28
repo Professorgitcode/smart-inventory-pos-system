@@ -96,8 +96,8 @@ const CreatePaymentModal = ({
   };
 
   const modalStyle = {
-    backgroundColor: theme.surface,
-    color: theme.text,
+    backgroundColor: theme.colors.surface,
+    color: theme.colors.text,
     width: "90%",
     maxWidth: "900px",
     borderRadius: "16px",
@@ -112,9 +112,9 @@ const CreatePaymentModal = ({
     width: "100%",
     padding: "12px",
     borderRadius: "8px",
-    border: `1px solid ${theme.border}`,
-    backgroundColor: theme.bg,
-    color: theme.text,
+    border: `1px solid ${theme.colors.border}`,
+    backgroundColor: theme.colors.background,
+    color: theme.colors.text,
     fontSize: "1rem",
     outline: "none",
     marginTop: "6px"
@@ -123,7 +123,7 @@ const CreatePaymentModal = ({
   const labelStyle = {
     fontSize: "0.85rem",
     fontWeight: "600",
-    color: theme.muted,
+    color: theme.colors.textMuted,
     display: "flex",
     alignItems: "center",
     gap: "6px"
@@ -133,16 +133,16 @@ const CreatePaymentModal = ({
     <div style={overlayStyle}>
       <div style={modalStyle}>
         {/* Header */}
-        <div style={{ padding: "20px 24px", borderBottom: `1px solid ${theme.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ padding: "20px 24px", borderBottom: `1px solid ${theme.colors.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: "700" }}>Complete Transaction</h2>
-          <X onClick={onClose} style={{ cursor: "pointer", color: theme.muted }} />
+          <X onClick={onClose} style={{ cursor: "pointer", color: theme.colors.textMuted }} />
         </div>
 
         {/* Body */}
         <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.8fr", height: "500px" }}>
           
           {/* Left: Payment Form */}
-          <div style={{ padding: "24px", overflowY: "auto", borderRight: `1px solid ${theme.border}` }}>
+          <div style={{ padding: "24px", overflowY: "auto", borderRight: `1px solid ${theme.colors.border}` }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
               <div>
                 <label style={labelStyle}><User size={14}/> Customer Name</label>
@@ -180,12 +180,12 @@ const CreatePaymentModal = ({
                 />
               </div>
               <div>
-                <label style={{...labelStyle, color: isInsufficient ? "#ef4444" : theme.primary}}>
+                <label style={{...labelStyle, color: isInsufficient ? "#ef4444" : theme.colors.primary}}>
                   <CreditCard size={14}/> Received Amount
                 </label>
                 <input 
                   type="number"
-                  style={{...inputStyle, borderColor: isInsufficient ? "#ef4444" : theme.border}}
+                  style={{...inputStyle, borderColor: isInsufficient ? "#ef4444" : theme.colors.border}}
                   placeholder="Enter Amount Received" 
                   value={receivedAmount}
                   onChange={(e) => setReceivedAmount(e.target.value)}
@@ -204,16 +204,16 @@ const CreatePaymentModal = ({
               />
             </div>
 
-            <div style={{ padding: "16px", borderRadius: "12px", backgroundColor: theme.bg, textAlign: "center" }}>
-              <p style={{ margin: 0, fontSize: "0.85rem", color: theme.muted }}>Change to Return</p>
-              <h1 style={{ margin: "4px 0 0 0", color: theme.primary, fontSize: "2rem" }}>
+            <div style={{ padding: "16px", borderRadius: "12px", backgroundColor: theme.colors.background, textAlign: "center" }}>
+              <p style={{ margin: 0, fontSize: "0.85rem", color: theme.colors.textMuted }}>Change to Return</p>
+              <h1 style={{ margin: "4px 0 0 0", color: theme.colors.primary, fontSize: "2rem" }}>
                 ${changeReturn.toFixed(2)}
               </h1>
             </div>
           </div>
 
           {/* Right: Order Summary */}
-          <div style={{ padding: "24px", backgroundColor: theme.bg }}>
+          <div style={{ padding: "24px", backgroundColor: theme.colors.background }}>
             <h3 style={{ margin: "0 0 20px 0", fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
               <Receipt size={18} /> Order Summary
             </h3>
@@ -232,7 +232,7 @@ const CreatePaymentModal = ({
                 <span>Discount ($)</span>
                 <input 
                   type="number" 
-                  style={{ width: "80px", textAlign: "right", border: "none", borderBottom: `1px solid ${theme.border}`, background: "none", color: theme.text, outline: "none" }}
+                  style={{ width: "80px", textAlign: "right", border: "none", borderBottom: `1px solid ${theme.colors.border}`, background: "none", color: theme.colors.text, outline: "none" }}
                   value={discount}
                   onChange={(e) => setDiscount(e.target.value)}
                 />
@@ -242,15 +242,15 @@ const CreatePaymentModal = ({
                 <span>Tax ($)</span>
                 <input 
                   type="number" 
-                  style={{ width: "80px", textAlign: "right", border: "none", borderBottom: `1px solid ${theme.border}`, background: "none", color: theme.text, outline: "none" }}
+                  style={{ width: "80px", textAlign: "right", border: "none", borderBottom: `1px solid ${theme.colors.border}`, background: "none", color: theme.colors.text, outline: "none" }}
                   value={tax}
                   onChange={(e) => setTax(e.target.value)}
                 />
               </div>
 
-              <div style={{ marginTop: "20px", paddingTop: "20px", borderTop: `2px dashed ${theme.border}`, display: "flex", justifyContent: "space-between" }}>
+              <div style={{ marginTop: "20px", paddingTop: "20px", borderTop: `2px dashed ${theme.colors.border}`, display: "flex", justifyContent: "space-between" }}>
                 <span style={{ fontWeight: "700", fontSize: "1.1rem" }}>Total Payable</span>
-                <span style={{ fontWeight: "800", fontSize: "1.1rem", color: theme.primary }}>
+                <span style={{ fontWeight: "800", fontSize: "1.1rem", color: theme.colors.primary }}>
                   ${finalPayable.toFixed(2)}
                 </span>
               </div>
@@ -266,13 +266,13 @@ const CreatePaymentModal = ({
         </div>
 
         {/* Footer */}
-        <div style={{ padding: "20px 24px", borderTop: `1px solid ${theme.border}`, display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+        <div style={{ padding: "20px 24px", borderTop: `1px solid ${theme.colors.border}`, display: "flex", gap: "12px", justifyContent: "flex-end" }}>
           <button 
             onClick={() => {
                 resetForm();
                 onClose();
             }}
-            style={{ padding: "12px 24px", borderRadius: "10px", border: `1px solid ${theme.border}`, backgroundColor: "transparent", color: theme.text, cursor: "pointer", fontWeight: "600" }}
+            style={{ padding: "12px 24px", borderRadius: "10px", border: `1px solid ${theme.colors.border}`, backgroundColor: "transparent", color: theme.colors.text, cursor: "pointer", fontWeight: "600" }}
           >
             Cancel
           </button>
@@ -283,7 +283,7 @@ const CreatePaymentModal = ({
               padding: "12px 32px", 
               borderRadius: "10px", 
               border: "none", 
-              backgroundColor: isInsufficient ? theme.muted : theme.primary, 
+              backgroundColor: isInsufficient ? theme.colors.textMuted : theme.colors.primary, 
               color: "white", 
               cursor: isInsufficient ? "not-allowed" : "pointer", 
               fontWeight: "700",

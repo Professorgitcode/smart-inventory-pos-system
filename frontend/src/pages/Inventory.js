@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Search, Plus, Edit3, Trash2 } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
 import ProductModal from "../components/ProductModal";
-import Toast from "../components/Toast";
+import Toast from "../components/common/Toast";
 
 const Inventory = ({ theme }) => {
   const API = "http://localhost:5216/api/products";
@@ -117,6 +118,12 @@ const Inventory = ({ theme }) => {
 
   // ================= DELETE =================
   const handleDelete = async (id) => {
+      const confirmDelete =
+        window.confirm(
+          "Confirm your action to Delete this Product?"
+        );
+
+      if (!confirmDelete) return;
     try {
       await fetch(`${API}/${id}`, {
         method: "DELETE"
@@ -125,7 +132,7 @@ const Inventory = ({ theme }) => {
      triggerToast(
   "Product Deleted",
   "Product removed from inventory.",
-  "error"
+  "info"
 );
       fetchProducts();
 
@@ -145,10 +152,10 @@ const Inventory = ({ theme }) => {
 
   return (
     <div style={{
-      backgroundColor: theme.surface,
+      backgroundColor: theme.colors.surface,
       padding: "24px",
       borderRadius: "16px",
-      border: `1px solid ${theme.border}`
+      border: `1px solid ${theme.colors.border}`
     }}>
 
       {/* TOAST */}
@@ -171,7 +178,7 @@ const Inventory = ({ theme }) => {
         
         {/* SEARCH */}
         <div style={{ position: "relative" }}>
-          <Search size={18} style={{ position: "absolute", left: "12px", top: "10px", color: theme.muted }} />
+          <Search size={18} style={{ position: "absolute", left: "12px", top: "10px", color: theme.colors.textMuted }} />
           <input
             placeholder="Search products..."
             value={search}
@@ -179,9 +186,9 @@ const Inventory = ({ theme }) => {
             style={{
               padding: "10px 10px 10px 40px",
               borderRadius: "8px",
-              border: `1px solid ${theme.border}`,
-              backgroundColor: theme.bg,
-              color: theme.text,
+              border: `1px solid ${theme.colors.border}`,
+              backgroundColor: theme.colors.background,
+              color: theme.colors.text,
               width: "300px",
               outline: "none"
             }}
@@ -192,7 +199,7 @@ const Inventory = ({ theme }) => {
         <button
           onClick={() => setModal({ isOpen: true, mode: "add", data: null })}
           style={{
-            backgroundColor: theme.primary,
+            backgroundColor: theme.colors.primary,
             color: "white",
             border: "none",
             padding: "10px 20px",
@@ -209,7 +216,7 @@ const Inventory = ({ theme }) => {
       {/* TABLE */}
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
-          <tr style={{ textAlign: "left", borderBottom: `1px solid ${theme.border}`, color: theme.muted }}>
+          <tr style={{ textAlign: "left", borderBottom: `1px solid ${theme.colors.border}`, color: theme.colors.textMuted }}>
             <th style={{ padding: "16px" }}>Product Name</th>
             <th style={{ padding: "16px" }}>Price</th>
             <th style={{ padding: "16px" }}>Stock</th>
@@ -219,7 +226,7 @@ const Inventory = ({ theme }) => {
 
         <tbody>
           {filteredProducts.map(p => (
-            <tr key={p.id} style={{ borderBottom: `1px solid ${theme.border}` }}>
+            <tr key={p.id} style={{ borderBottom: `1px solid ${theme.colors.border}` }}>
               
               <td style={{ padding: "16px" }}>{p.name}</td>
               <td style={{ padding: "16px" }}>${p.price}</td>
@@ -229,14 +236,14 @@ const Inventory = ({ theme }) => {
                 
                 <Edit3
                   size={18}
-                  color={theme.muted}
+                  color={theme.colors.textMuted}
                   style={{ cursor: "pointer" }}
                   onClick={() => setModal({ isOpen: true, mode: "edit", data: p })}
                 />
 
                 <Trash2
                   size={18}
-                  color="#ef4444"
+                  color={theme.colors.danger}
                   style={{ cursor: "pointer" }}
                   onClick={() => handleDelete(p.id)}
                 />

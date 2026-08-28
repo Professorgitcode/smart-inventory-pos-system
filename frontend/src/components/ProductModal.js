@@ -49,15 +49,15 @@ const ProductModal = ({ isOpen, onClose, onSubmit, initialData, mode, theme }) =
   };
 
   const modalStyle = {
-    backgroundColor: theme.surface,
-    color: theme.text,
+    backgroundColor: theme.colors.surface,
+    color: theme.colors.text,
     width: "100%",
     maxWidth: "450px",
     borderRadius: "16px",
     boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)",
     padding: "32px",
     position: "relative",
-    border: `1px solid ${theme.border}`,
+    border: `1px solid ${theme.colors.border}`,
     transform: "scale(1)",
     animation: "slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
   };
@@ -72,15 +72,15 @@ const ProductModal = ({ isOpen, onClose, onSubmit, initialData, mode, theme }) =
   const labelStyle = {
     fontSize: "0.85rem",
     fontWeight: "600",
-    color: theme.muted,
+    color: theme.colors.textMuted,
   };
 
   const inputStyle = {
     padding: "12px 10px",
     borderRadius: "10px",
-    border: `1px solid ${theme.border}`,
-    backgroundColor: theme.bg,
-    color: theme.text,
+    border: `1px solid ${theme.colors.border}`,
+    backgroundColor: theme.colors.background,
+    color: theme.colors.text,
     fontSize: "1rem",
     outline: "none",
     transition: "border-color 0.2s",
@@ -93,7 +93,7 @@ const ProductModal = ({ isOpen, onClose, onSubmit, initialData, mode, theme }) =
           <h2 style={{ margin: 0, fontSize: "1.5rem", fontWeight: "700" }}>
             {mode === "add" ? "Add New Product" : "Edit Product"}
           </h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: theme.muted }}>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: theme.colors.textMuted }}>
             <X size={24} />
           </button>
         </div>
@@ -142,13 +142,13 @@ const ProductModal = ({ isOpen, onClose, onSubmit, initialData, mode, theme }) =
             <button 
               type="button" 
               onClick={onClose} 
-              style={{ flex: 1, padding: "12px", borderRadius: "10px", border: `1px solid ${theme.border}`, backgroundColor: "transparent", color: theme.text, fontWeight: "600", cursor: "pointer" }}
+              style={{ flex: 1, padding: "12px", borderRadius: "10px", border: `1px solid ${theme.colors.border}`, backgroundColor: "transparent", color: theme.colors.text, fontWeight: "600", cursor: "pointer" }}
             >
               Cancel
             </button>
             <button 
               type="submit" 
-              style={{ flex: 1, padding: "12px", borderRadius: "10px", border: "none", backgroundColor: theme.primary, color: "white", fontWeight: "600", cursor: "pointer" }}
+              style={{ flex: 1, padding: "12px", borderRadius: "10px", border: "none", backgroundColor: theme.colors.primary, color: "white", fontWeight: "600", cursor: "pointer" }}
             >
               {mode === "add" ? "Save Product" : "Update Details"}
             </button>

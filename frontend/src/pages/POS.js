@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ShoppingCart, Plus, Minus } from "lucide-react";
-import Toast from "../components/Toast";
+import { useTheme } from "../context/ThemeContext";
+import Toast from "../components/common/Toast";
 import CreatePaymentModal from "../components/CreatePaymentModal";
 import ReceiptModal from "../components/ReceiptModal";
 
@@ -12,7 +13,7 @@ const POS = ({ theme }) => {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-
+    
    // Receipt states
   const [paymentData, setPaymentData] = useState(null);
   const [showReceipt, setShowReceipt] = useState(false);
@@ -112,6 +113,7 @@ const POS = ({ theme }) => {
       );
 
       triggerToast(
+        "Cart Update",
         `${product.name} quantity updated`,
         "info"
       );
@@ -324,10 +326,10 @@ const POS = ({ theme }) => {
               <div
                 key={product.id}
                 style={{
-                  backgroundColor: theme.surface,
+                  backgroundColor: theme.colors.surface,
                   padding: "16px",
                   borderRadius: "12px",
-                  border: `1px solid ${theme.border}`,
+                  border: `1px solid ${theme.colors.border}`,
                   textAlign: "center"
                 }}
               >
@@ -335,7 +337,7 @@ const POS = ({ theme }) => {
                 <div
                   style={{
                     height: "100px",
-                    backgroundColor: theme.bg,
+                    backgroundColor: theme.colors.background,
                     borderRadius: "8px",
                     marginBottom: "12px"
                   }}
@@ -347,7 +349,7 @@ const POS = ({ theme }) => {
 
                 <div
                   style={{
-                    color: theme.primary,
+                    color: theme.colors.primary,
                     fontWeight: "800"
                   }}
                 >
@@ -357,7 +359,7 @@ const POS = ({ theme }) => {
                 <div
                   style={{
                     fontSize: "12px",
-                    color: theme.muted,
+                    color: theme.colors.textMuted,
                     marginBottom: "10px"
                   }}
                 >
@@ -371,7 +373,7 @@ const POS = ({ theme }) => {
                     width: "100%",
                     padding: "8px",
                     borderRadius: "6px",
-                    border: `1px solid ${theme.primary}`,
+                    border: `1px solid ${theme.colors.primary}`,
                     background:
                       product.stockQuantity <= 0
                         ? "#ccc"
@@ -379,7 +381,7 @@ const POS = ({ theme }) => {
                     color:
                       product.stockQuantity <= 0
                         ? "#666"
-                        : theme.primary,
+                        : theme.colors.primary,
                     fontWeight: "600",
                     cursor:
                       product.stockQuantity <= 0
@@ -400,18 +402,22 @@ const POS = ({ theme }) => {
         <div
           style={{
             flex: 1,
-            backgroundColor: theme.surface,
+            backgroundColor: theme.colors.surface,
             borderRadius: "16px",
-            border: `1px solid ${theme.border}`,
+            border: `1px solid ${theme.colors.border}`,
             display: "flex",
-            flexDirection: "column"
+            flexDirection: "column",
+            position: "sticky",
+     
+           height: "calc(100vh - 120px)",
+           overflowY: "auto",
           }}
         >
           {/* Cart Header */}
           <div
             style={{
               padding: "24px",
-              borderBottom: `1px solid ${theme.border}`,
+              borderBottom: `1px solid ${theme.colors.border}`,
               fontWeight: "700",
               display: "flex",
               gap: "10px"
@@ -430,7 +436,7 @@ const POS = ({ theme }) => {
             }}
           >
             {cart.length === 0 ? (
-              <p style={{ color: theme.muted }}>
+              <p style={{ color: theme.colors.textMuted }}>
                 No items added yet
               </p>
             ) : (
@@ -445,7 +451,7 @@ const POS = ({ theme }) => {
                 >
                   <div>
                     <div>{item.name}</div>
-                    <small style={{ color: theme.muted }}>
+                    <small style={{ color: theme.colors.textMuted }}>
                       ${item.price} × {item.quantity}
                     </small>
                   </div>
@@ -484,7 +490,7 @@ const POS = ({ theme }) => {
           <div
             style={{
               padding: "24px",
-              backgroundColor: theme.bg,
+              backgroundColor: theme.colors.background,
               borderRadius: "0 0 16px 16px"
             }}
           >
@@ -505,7 +511,7 @@ const POS = ({ theme }) => {
               onClick={handleCheckout}
               style={{
                 width: "100%",
-                backgroundColor: theme.primary,
+                backgroundColor: theme.colors.primary,
                 color: "white",
                 padding: "14px",
                 borderRadius: "8px",

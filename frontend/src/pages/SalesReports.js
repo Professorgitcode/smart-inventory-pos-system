@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Toast from "../components/Toast";
+import Toast from "../components/common/Toast";
 import {
   TrendingUp,
   DollarSign,
@@ -18,17 +18,17 @@ import {
   ResponsiveContainer,
   CartesianGrid
 } from "recharts";
-
+import { useTheme } from "../context/ThemeContext";
 const REPORT_API = "http://localhost:5216/api/reports";
 
 // ---------------- Analytics Card ----------------
 const AnalyticsCard = ({ title, value, icon: Icon, color, theme }) => (
   <div
     style={{
-      backgroundColor: theme.surface,
+      backgroundColor: theme.colors.surface,
       padding: "24px",
       borderRadius: "16px",
-      border: `1px solid ${theme.border}`,
+      border: `1px solid ${theme.colors.border}`,
       boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
       flex: 1,
       display: "flex",
@@ -45,7 +45,7 @@ const AnalyticsCard = ({ title, value, icon: Icon, color, theme }) => (
     >
       <span
         style={{
-          color: theme.muted,
+          color: theme.colors.textMuted,
           fontSize: "0.85rem",
           fontWeight: "600",
           textTransform: "uppercase",
@@ -72,7 +72,7 @@ const AnalyticsCard = ({ title, value, icon: Icon, color, theme }) => (
         margin: 0,
         fontSize: "1.5rem",
         fontWeight: "700",
-        color: theme.text
+        color: theme.colors.text
       }}
     >
       {value}
@@ -93,7 +93,7 @@ const OrderRow = ({ order, theme }) => {
         display: "flex",
         alignItems: "center",
         padding: "12px 0",
-        borderBottom: `1px solid ${theme.border}`,
+        borderBottom: `1px solid ${theme.colors.border}`,
         gap: "12px"
       }}
     >
@@ -103,7 +103,7 @@ const OrderRow = ({ order, theme }) => {
             margin: 0,
             fontSize: "0.9rem",
             fontWeight: "600",
-            color: theme.text
+            color: theme.colors.text
           }}
         >
           Order #{order.orderId}
@@ -113,7 +113,7 @@ const OrderRow = ({ order, theme }) => {
           style={{
             margin: 0,
             fontSize: "0.75rem",
-            color: theme.muted
+            color: theme.colors.textMuted
           }}
         >
           {new Date(order.createdAt).toLocaleString()}
@@ -126,7 +126,7 @@ const OrderRow = ({ order, theme }) => {
             margin: 0,
             fontSize: "0.9rem",
             fontWeight: "700",
-            color: theme.text
+            color: theme.colors.text
           }}
         >
           ${order.amount}
@@ -295,7 +295,7 @@ const chartData = [
 
   if (loading) {
     return (
-      <div style={{ padding: "32px", color: theme.text }}>
+      <div style={{ padding: "32px", color: theme.colors.text }}>
         Loading Sales Reports...
       </div>
     );
@@ -341,14 +341,14 @@ const chartData = [
                 margin: 0,
                 fontSize: "1.9rem",
                 fontWeight: "800",
-                color: theme.text,
+                color: theme.colors.text,
                 letterSpacing: "-0.5px"
               }}
             >
               Sales Analytics
             </h1>
 
-            <p style={{ color: theme.muted }}>
+            <p style={{ color: theme.colors.textMuted }}>
               Detailed financial performance and forecasting.
             </p>
           </div>
@@ -361,15 +361,15 @@ const chartData = [
               style={{
                 padding: "10px 16px",
                 borderRadius: "10px",
-                border: `1px solid ${theme.border}`,
-                backgroundColor: theme.surface,
+                border: `1px solid ${theme.colors.border}`,
+                backgroundColor: theme.colors.surface,
                 cursor: "pointer", 
                 display: "flex", 
                 alignItems: "center", 
                 gap: "8px",
                 fontSize: "0.9rem", 
                 fontWeight: "600", 
-                color: theme.text
+                color: theme.colors.text
               }}
             />
 
@@ -380,15 +380,15 @@ const chartData = [
               style={{
                 padding: "10px 16px",
                 borderRadius: "10px",
-                border: `1px solid ${theme.border}`,
-                backgroundColor: theme.surface,
+                border: `1px solid ${theme.colors.border}`,
+                backgroundColor: theme.colors.surface,
                 cursor: "pointer", 
                 display: "flex", 
                 alignItems: "center", 
                 gap: "8px",
                 fontSize: "0.9rem", 
                 fontWeight: "600", 
-                color: theme.text
+                color: theme.colors.text
               }}
             />
           </div>
@@ -406,10 +406,10 @@ const chartData = [
           {/* Forecast Card */}
           <div
             style={{
-              backgroundColor: theme.surface,
+              backgroundColor: theme.colors.surface,
               padding: "24px",
               borderRadius: "20px",
-              border: `1px solid ${theme.border}`,
+              border: `1px solid ${theme.colors.border}`,
               boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)"
             }}
           >
@@ -421,7 +421,7 @@ const chartData = [
                 alignItems: "center"
               }}
             >
-              <h3 style={{ margin: 0,fontSize: "1.1rem", fontWeight: "700", color: theme.text }}>
+              <h3 style={{ margin: 0,fontSize: "1.1rem", fontWeight: "700", color: theme.colors.text }}>
                 Revenue Forecast
               </h3>
 
@@ -444,12 +444,12 @@ const chartData = [
     height: "420px",
                 backgroundColor: "#f8fafc",
                 borderRadius: "12px",
-                border: `2px dashed ${theme.border}`,
+                border: `2px dashed ${theme.colors.border}`,
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
                 alignItems: "center",
-                color: theme.muted
+                color: theme.colors.textMuted
   }}
 >
   {chartData.length === 0 ? (
@@ -459,7 +459,7 @@ const chartData = [
         height: "100%",
         alignItems: "center",
         justifyContent: "center",
-        color: theme.muted
+        color: theme.colors.textMuted
       }}
     >
       No analytics data available
@@ -504,10 +504,10 @@ const chartData = [
           {/* Recent Orders */}
           <div
             style={{
-              backgroundColor: theme.surface,
+              backgroundColor: theme.colors.surface,
               padding: "24px",
               borderRadius: "20px",
-              border: `1px solid ${theme.border}`,
+              border: `1px solid ${theme.colors.border}`,
               boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
               display: "flex",
               flexDirection: "column"
@@ -520,11 +520,11 @@ const chartData = [
                 alignItems: "center"
               }}
             >
-              <h3 style={{ margin: 0,fontSize: "1.1rem", fontWeight: "700", color: theme.text }}>
+              <h3 style={{ margin: 0,fontSize: "1.1rem", fontWeight: "700", color: theme.colors.text }}>
                 Recent Orders
               </h3>
 
-              <div style={{ backgroundColor: "none", border: "none", color: theme.primary, fontWeight: "600", fontSize: "0.85rem", cursor: "pointer", display: "flex", gap: "12px" }}>
+              <div style={{ backgroundColor: "none", border: "none", color: theme.colors.primary, fontWeight: "600", fontSize: "0.85rem", cursor: "pointer", display: "flex", gap: "12px" }}>
                 <button onClick={() => handleExport("pdf")}>
                   Export PDF
                 </button>
@@ -549,7 +549,7 @@ const chartData = [
                   />
                 ))
               ) : (
-                <p style={{ color: theme.muted }}>
+                <p style={{ color: theme.colors.textMuted }}>
                   No recent orders found.
                 </p>
               )}

@@ -1,103 +1,74 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
-  DollarSign,
-  Package,
-  BrainCircuit,
-  AlertTriangle,
-  BarChart3,
   TrendingUp,
-  Warehouse,
-  Boxes,
-  PackageSearch,
+  TrendingDown,
+  Package,
+  ShoppingCart,
+  DollarSign,
+  AlertTriangle,
+  ChevronDown,
+  Calendar,
+  Sun,
+  Bell,
+  Info,
+  Activity,
+  BrainCircuit,
   ShieldAlert,
-  Activity
+  Warehouse
 } from "lucide-react";
+
 import {
   LineChart,
   Line,
   XAxis,
   YAxis,
+  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
   BarChart,
-  Bar,
-  Legend
+  Bar
 } from "recharts";
-import Toast from "../components/Toast";
-
-const StatCard = ({
-  title,
-  value,
-  icon: Icon,
-  theme
-}) => (
-  <div
-    style={{
-      backgroundColor: theme.surface,
-      padding: "24px",
-      borderRadius: "16px",
-      border: `1px solid ${theme.border}`,
-      flex: 1,
-      minWidth: "240px"
-    }}
-  >
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        marginBottom: "12px"
-      }}
-    >
-      <span style={{ color: theme.muted }}>
-        {title}
-      </span>
-      <Icon
-        color={theme.primary}
-        size={20}
-      />
-    </div>
-
-    <div
-      style={{
-        fontSize: "1.75rem",
-        fontWeight: "800"
-      }}
-    >
-      {value}
-    </div>
-  </div>
-);
+import MiniStat from "../components/dashboard/MiniStat";
+import TableCard from "../components/dashboard/TableCard";
+import StatCard from "../components/dashboard/StatCard";
+import InventoryHealthChart from "../components/dashboard/InventoryHealthChart";
+import RevenueForecastChart from "../components/dashboard/RevenueForecastChart";
+import AIRecommendationWidget from "../components/dashboard/AIRecommendationWidget";
+import QuickActionsPanel from "../components/dashboard/QuickActionsPanel";
+import EnterpriseDashboardHeader from "../components/dashboard/EnterpriseDashboardHeader";
+import { Card } from "../components/ui/cards/Card";
+import { useTheme } from "../context/ThemeContext";
+import Toast from "../components/common/Toast";
 
 const Dashboard = ({ theme }) => {
-  const DASHBOARD_API =
-    "http://localhost:5216/api/dashboard";
+  // ================= API URLs =================
+  const DASHBOARD_API = "http://localhost:5216/api/dashboard";
+  const INVENTORY_INSIGHT_API = "http://localhost:5216/api/inventoryinsights";
+  const FORECAST_API = "http://localhost:5216/api/forecast";
+  const PRODUCT_FORECAST_API = "http://localhost:5216/api/productforecast";
 
-    const INVENTORY_INSIGHT_API =
-  "http://localhost:5216/api/inventoryinsights";
-
+  // ================= STATE =================
   const [stats, setStats] = useState({
     totalSales: 0,
     totalProducts: 0,
     forecast: "",
     lowStock: 0,
     recentOrders: [],
-    salesTrend: [] // ✅ ADD THIS
+    salesTrend: [],
+    forecastData: []
   });
 
-  const [fastMovingProducts, setFastMovingProducts] =
-  useState([]);
+  const [fastMovingProducts, setFastMovingProducts] = useState([]);
+  const [deadStockProducts, setDeadStockProducts] = useState([]);
+  const [reorderSuggestions, setReorderSuggestions] = useState([]);
+  const [stockMovement, setStockMovement] = useState([]);
+  const [productForecasts, setProductForecasts] = useState([]);
 
-  const [deadStockProducts, setDeadStockProducts] =
-  useState([]);
-
-  const [reorderSuggestions, setReorderSuggestions] =
-  useState([]);
-
-  const [stockMovement, setStockMovement] =
-  useState([]);
-
-  // ================= TOAST STATE =================
+  // ================= TOAST =================
   const [toast, setToast] = useState({
     isVisible: false,
     header: "",
@@ -105,174 +76,162 @@ const Dashboard = ({ theme }) => {
     type: "info"
   });
 
-  const triggerToast = (
-    header,
-    message,
-    type = "info"
-  ) => {
-    setToast({
-      isVisible: false,
-      header,
-      message,
-      type
-    });
-
+  const triggerToast = (header, message, type = "info") => {
+    setToast({ isVisible: false, header, message, type });
     setTimeout(() => {
-      setToast({
-        isVisible: true,
-        header,
-        message,
-        type
-      });
+      setToast({ isVisible: true, header, message, type });
     }, 10);
   };
-
-  const chartData = stats.salesTrend?.map(item => ({
-  date: item.date,
-  revenue: item.totalRevenue,
-  orders: item.orderCount,
-  forecast: item.forecast ?? null // future-ready
-})) || [];
-
-const stockMovementChartData =
-  stockMovement.map(item => ({
-    name: item.productName,
-    sold: item.totalSold,
-    stock: item.currentStock
-  }));
-
-  const criticalStockCount =
-  stockMovement.filter(
-    item => item.currentStock <= 5
-  ).length;
-
-const fastMovingCount =
-  fastMovingProducts.filter(
-    item => item.velocityCategory === "FAST"
-  ).length;
-
-const deadStockCount =
-  deadStockProducts.length;
-
-// ================= FETCH FAST MOVERS =================
-const fetchFastMovingProducts = async () => {
-  try {
-    const res = await fetch(
-      `${INVENTORY_INSIGHT_API}/fast-moving`
-    );
-
-    const data = await res.json();
-
-    setFastMovingProducts(data);
-
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-// ================= FETCH DEAD STOCK =================
-const fetchDeadStock = async () => {
-  try {
-    const res = await fetch(
-      `${INVENTORY_INSIGHT_API}/dead-stock`
-    );
-
-    const data = await res.json();
-
-    setDeadStockProducts(data);
-
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-// ================= FETCH REORDER =================
-const fetchReorderSuggestions = async () => {
-  try {
-    const res = await fetch(
-      `${INVENTORY_INSIGHT_API}/reorder`
-    );
-
-    const data = await res.json();
-
-    setReorderSuggestions(data);
-
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-// ================= FETCH STOCK MOVEMENT =================
-const fetchStockMovement = async () => {
-  try {
-    const res = await fetch(
-      `${INVENTORY_INSIGHT_API}/stock-movement`
-    );
-
-    const data = await res.json();
-
-    setStockMovement(data);
-
-  } catch (error) {
-    console.error(error);
-  }
-};
 
   // ================= FETCH DASHBOARD =================
   const fetchDashboardData = async () => {
     try {
-      const res = await fetch(
-        DASHBOARD_API
-      );
-
-      if (!res.ok) {
-        throw new Error(
-          `Server Error: ${res.status}`
-        );
-      }
+      const res = await fetch(DASHBOARD_API);
+      if (!res.ok) throw new Error(`Server Error: ${res.status}`);
 
       const data = await res.json();
+      const forecastRes = await fetch(FORECAST_API);
+      const forecastData = await forecastRes.json();
 
       setStats({
         totalSales: data.totalSales,
-        totalProducts:
-          data.totalProducts,
+        totalProducts: data.totalProducts,
         forecast: data.forecast,
-        lowStock:
-          data.lowStockCount,
-        recentOrders:
-          data.recentOrders,
-           salesTrend: data.salesTrend || [] // ✅ ADD THIS
+        lowStock: data.lowStockCount,
+        recentOrders: data.recentOrders,
+        salesTrend: data.salesTrend || [],
+        forecastData: forecastData || []
       });
     } catch (error) {
-      console.error(
-        "Dashboard fetch error:",
-        error
-      );
-
+      console.error("Dashboard fetch error:", error);
       triggerToast(
         "Dashboard API Error",
-        "Failed to connect to backend server. Please check if your ASP.NET API is running.",
+        "Failed to connect to backend server.",
         "error"
       );
     }
   };
 
- useEffect(() => {
-  fetchDashboardData();
+  // ================= FETCH FAST MOVERS =================
+  const fetchFastMovingProducts = async () => {
+    try {
+      const res = await fetch(`${INVENTORY_INSIGHT_API}/fast-moving`);
+      const data = await res.json();
+      setFastMovingProducts(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-  fetchFastMovingProducts();
+  // ================= FETCH DEAD STOCK =================
+  const fetchDeadStock = async () => {
+    try {
+      const res = await fetch(`${INVENTORY_INSIGHT_API}/dead-stock`);
+      const data = await res.json();
+      setDeadStockProducts(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-  fetchDeadStock();
+  // ================= FETCH REORDER =================
+  const fetchReorderSuggestions = async () => {
+    try {
+      const res = await fetch(`${INVENTORY_INSIGHT_API}/reorder`);
+      const data = await res.json();
+      setReorderSuggestions(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-  fetchReorderSuggestions();
+  // ================= FETCH STOCK MOVEMENT =================
+  const fetchStockMovement = async () => {
+    try {
+      const res = await fetch(`${INVENTORY_INSIGHT_API}/stock-movement`);
+      const data = await res.json();
+      setStockMovement(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-  fetchStockMovement();
+  // ================= FETCH PRODUCT FORECASTS =================
+  const fetchProductForecasts = async () => {
+    try {
+      const res = await fetch(PRODUCT_FORECAST_API);
+      const data = await res.json();
+      setProductForecasts(data);
+    } catch (error) {
+      console.error("Forecast Error:", error);
+    }
+  };
 
-}, []);
+  // ================= LOAD DATA =================
+  useEffect(() => {
+    fetchDashboardData();
+    fetchFastMovingProducts();
+    fetchDeadStock();
+    fetchReorderSuggestions();
+    fetchStockMovement();
+    fetchProductForecasts();
+  }, []);
+
+  // ================= REAL DATA MAPPING =================
+  const revenueData =
+    stats.forecastData?.map(item => ({
+      date: item.date,
+      actual: item.actualRevenue,
+      predicted: item.predictedRevenue,
+      confidence: item.confidenceScore
+    })) || [];
+
+  const movementData = stockMovement.map(item => ({
+    name: item.productName,
+    sold: item.totalSold,
+    stock: item.currentStock
+  }));
+
+  const criticalStockCount = stockMovement.filter(
+    item => item.currentStock <= 5
+  ).length;
+
+  const fastMovingCount = fastMovingProducts.filter(
+    item => item.velocityCategory === "FAST"
+  ).length;
+
+  const deadStockCount = deadStockProducts.length;
+
+  const healthyPercentage = Math.max(
+    0,
+    100 - (stats.lowStock / Math.max(stats.totalProducts, 1)) * 100
+  );
+
+  const healthData = [
+    { name: "Healthy", value: Math.round(healthyPercentage), color: "#06b6d4" },
+    {
+      name: "At Risk",
+      value: Math.round((stats.lowStock / Math.max(stats.totalProducts, 1)) * 70),
+      color: "#f59e0b"
+    },
+    {
+      name: "Critical",
+      value: Math.round((stats.lowStock / Math.max(stats.totalProducts, 1)) * 30),
+      color: "#ef4444"
+    }
+  ];
 
   return (
-    <div>
+    <div
+      style={{
+        padding: "32px",
+        backgroundColor: theme.colors.background,
+        minHeight: "100vh",
+        color: theme.colors.text,
+        fontFamily: theme.typography.fontFamily.primary,
+        boxSizing: "border-box"
+      }}
+    >
       {/* TOAST */}
       <Toast
         header={toast.header}
@@ -280,448 +239,260 @@ const fetchStockMovement = async () => {
         type={toast.type}
         isVisible={toast.isVisible}
         theme={theme}
-        onClose={() =>
-          setToast((prev) => ({
-            ...prev,
-            isVisible: false
-          }))
-        }
+        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))}
       />
 
-      {/* LOW STOCK ALERT */}
-      {stats.lowStock > 0 && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            color: "#c2410c",
-            border:
-              "1px solid #ffedd5",
-            padding: "16px",
-            backgroundColor:
-              "#fff7ed",
-            borderRadius: "12px",
-            marginBottom: "32px"
-          }}
-        >
-          <AlertTriangle size={22} />
+      {/* HEADER */}
+      <EnterpriseDashboardHeader theme={theme} user="Albert" />
 
-          <span
-            style={{
-              fontWeight: "600"
-            }}
-          >
-            Low Stock Alert:{" "}
-            {stats.lowStock} products
-            require immediate restock.
-          </span>
-        </div>
-      )}
+      {/* QUICK ACTIONS */}
+      <QuickActionsPanel theme={theme} />
 
-      {/* STATS */}
+      {/* AI RECOMMENDATIONS */}
+      <AIRecommendationWidget theme={theme} />
+
+      {/* TOP STATS */}
       <div
         style={{
-          display: "flex",
-          gap: "24px"
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: "24px",
+          marginBottom: "32px"
         }}
       >
         <StatCard
-          title="Total Sales"
-          value={`$${stats.totalSales}`}
-          icon={DollarSign}
           theme={theme}
+          icon={<DollarSign size={20} color="#3b82f6" />}
+          label="Total Revenue"
+          value={`$${stats.totalSales.toLocaleString()}`}
+          trend="+12.4%"
+          positive
         />
-
         <StatCard
-          title="Active Products"
+          theme={theme}
+          icon={<ShoppingCart size={20} color="#3b82f6" />}
+          label="Orders"
+          value={stats.salesTrend.length}
+          trend="+8.7%"
+          positive
+        />
+        <StatCard
+          theme={theme}
+          icon={<Package size={20} color="#3b82f6" />}
+          label="Products"
           value={stats.totalProducts}
-          icon={Package}
-          theme={theme}
+          trend="+5.2%"
+          positive
         />
-
         <StatCard
-          title="AI Forecast"
-          value={stats.forecast}
-          icon={BrainCircuit}
           theme={theme}
+          icon={<AlertTriangle size={20} color="#ef4444" />}
+          label="Low Stock"
+          value={stats.lowStock}
+          trend="-4.3%"
         />
       </div>
 
-      {/* CHART SECTION */}
+      {/* MAIN CHARTS ROW */}
       <div
         style={{
-          backgroundColor:
-            theme.surface,
-          height: "440px",
-          marginTop: "30px",
-          borderRadius: "16px",
-          border: `1px solid ${theme.border}`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: theme.muted
+          display: "grid",
+          gridTemplateColumns: "2fr 1fr",
+          gap: "24px",
+          marginBottom: "32px"
         }}
       >
-        {stats.salesTrend.length === 0 ? (
-  <div style={{ textAlign: "center" }}>
-    <BarChart3
-      size={48}
-      style={{
-        marginBottom: "16px",
-        opacity: 0.2
-      }}
-    />
-    <p>No sales data available</p>
-  </div>
-) : (
-  <ResponsiveContainer width="100%" height="100%">
-    <LineChart data={chartData}>
-  <CartesianGrid strokeDasharray="3 3" />
-
- <XAxis
-  dataKey="date"
-  tickFormatter={(d) => d.slice(5)}
-/>
-
-  {/* LEFT AXIS → Revenue */}
-  <YAxis
-    yAxisId="left"
-    orientation="left"
-  />
-
-  {/* RIGHT AXIS → Orders */}
-  <YAxis
-    yAxisId="right"
-    orientation="right"
-  />
-
- <Tooltip
-  formatter={(value, name) => {
-    if (name === "revenue") return [`$${value}`, "Revenue"];
-    if (name === "orders") return [value, "Orders"];
-  }}
-/>
-
-  {/* Revenue Line */}
-  <Line
-    yAxisId="left"
-    type="monotone"
-    dataKey="revenue"
-    stroke="#3b82f6"
-    strokeWidth={2}
-  />
-
-  {/* Orders Line */}
-  <Line
-    yAxisId="right"
-    type="monotone"
-    dataKey="orders"
-    stroke="#10b981"
-    strokeWidth={2}
-  />
-
-{/* AI Forecast Line */}
-  <Line
-  yAxisId="left"
-  type="monotone"
-  dataKey="AI forecast"
-  stroke="#f59e0b"
-  strokeDasharray="5 5"
-/>
-</LineChart>
-  </ResponsiveContainer>
-)}
+        <RevenueForecastChart theme={theme} revenueData={revenueData} />
+        <InventoryHealthChart
+          theme={theme}
+          healthData={healthData}
+          healthyPercentage={healthyPercentage}
+        />
       </div>
-      {/* INVENTORY HEALTH KPIs */}
-<div
-  style={{
-    display: "grid",
-    gridTemplateColumns:
-      "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: "20px",
-    marginTop: "30px"
-  }}
->
 
-  {/* CRITICAL STOCK */}
-  <div
-    style={{
-      backgroundColor: theme.surface,
-      padding: "20px",
-      borderRadius: "16px",
-      border: `1px solid ${theme.border}`
-    }}
-  >
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between"
-      }}
-    >
-      <span>Critical Inventory</span>
-
-      <AlertTriangle color="#ef4444" />
-    </div>
-
-    <h2 style={{ marginTop: "20px" }}>
-      {criticalStockCount}
-    </h2>
-
-    <p style={{ color: theme.muted }}>
-      Products nearing depletion
-    </p>
-  </div>
-
-  {/* FAST MOVERS */}
-  <div
-    style={{
-      backgroundColor: theme.surface,
-      padding: "20px",
-      borderRadius: "16px",
-      border: `1px solid ${theme.border}`
-    }}
-  >
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between"
-      }}
-    >
-      <span>Fast Movers</span>
-
-      <TrendingUp color="#10b981" />
-    </div>
-
-    <h2 style={{ marginTop: "20px" }}>
-      {fastMovingCount}
-    </h2>
-
-    <p style={{ color: theme.muted }}>
-      High demand products
-    </p>
-  </div>
-
-  {/* DEAD STOCK */}
-  <div
-    style={{
-      backgroundColor: theme.surface,
-      padding: "20px",
-      borderRadius: "16px",
-      border: `1px solid ${theme.border}`
-    }}
-  >
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between"
-      }}
-    >
-      <span>Dead Stock</span>
-
-      <Warehouse color="#f59e0b" />
-    </div>
-
-    <h2 style={{ marginTop: "20px" }}>
-      {deadStockCount}
-    </h2>
-
-    <p style={{ color: theme.muted }}>
-      Stagnant inventory items
-    </p>
-  </div>
-
-</div>
-{/* STOCK MOVEMENT ANALYTICS */}
-<div
-  style={{
-    backgroundColor: theme.surface,
-    marginTop: "30px",
-    borderRadius: "16px",
-    border: `1px solid ${theme.border}`,
-    padding: "24px"
-  }}
->
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: "10px",
-      marginBottom: "20px"
-    }}
-  >
-    <Boxes color="#3b82f6" />
-
-    <h3 style={{ margin: 0 }}>
-      Stock Movement Analytics
-    </h3>
-  </div>
-
-  <div style={{ height: "350px" }}>
-    <ResponsiveContainer
-      width="100%"
-      height="100%"
-    >
-      <BarChart
-        data={stockMovementChartData}
-      >
-        <CartesianGrid
-          strokeDasharray="3 3"
-        />
-
-        <XAxis dataKey="name" />
-
-        <YAxis />
-
-        <Tooltip />
-
-        <Legend />
-
-        {/* SOLD */}
-        <Bar
-          dataKey="sold"
-          fill="#3b82f6"
-        />
-
-        {/* CURRENT STOCK */}
-        <Bar
-          dataKey="stock"
-          fill="#10b981"
-        />
-      </BarChart>
-    </ResponsiveContainer>
-  </div>
-</div>
-
-{/* SMART WAREHOUSE INTELLIGENCE */}
-<div
-  style={{
-    marginTop: "30px",
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "24px"
-  }}
->
-
-  {/* FAST MOVERS */}
-  <div
-    style={{
-      backgroundColor: theme.surface,
-      borderRadius: "16px",
-      padding: "20px",
-      border: `1px solid ${theme.border}`
-    }}
-  >
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        marginBottom: "20px"
-      }}
-    >
-      <TrendingUp color="#10b981" />
-      <h3 style={{ margin: 0 }}>
-        Fast Moving Products
-      </h3>
-    </div>
-
-    {fastMovingProducts.slice(0, 5).map(product => (
+      {/* BOTTOM SECTION */}
       <div
-        key={product.productId}
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          padding: "10px 0",
-          borderBottom: `1px solid ${theme.border}`
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr 1.5fr",
+          gap: "24px",
+          marginBottom: "32px"
         }}
       >
-        <div>
-          <strong>{product.productName}</strong>
+        {/* FAST MOVERS */}
+        <TableCard
+          theme={theme}
+          title="Fast Moving Products"
+          items={fastMovingProducts.slice(0, 5).map(product => ({
+            name: product.productName,
+            stat: `${product.totalSold}`,
+            badge: product.velocityCategory,
+            bColor: "#06b6d4"
+          }))}
+        />
 
-          <div
-            style={{
-              fontSize: "0.8rem",
-              color: theme.muted
-            }}
-          >
-            {product.velocityCategory}
+        {/* DEAD STOCK */}
+        <TableCard
+          theme={theme}
+          title="Dead Stock Alerts"
+          items={deadStockProducts.slice(0, 5).map(product => ({
+            name: product.productName,
+            stat: `${product.daysInInventory} Days`,
+            badge: product.riskLevel,
+            bColor: "#ef4444"
+          }))}
+        />
+
+        {/* STOCK MOVEMENT */}
+        <div style={cardStyle(theme)}>
+          <div style={cardHeader}>
+            <h3 style={cardTitle(theme)}>Stock Movement Overview</h3>
+          </div>
+
+          <div style={{ height: "260px", marginTop: "20px" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={movementData}>
+                <XAxis dataKey="name" hide />
+                <Tooltip
+  cursor={{ fill: theme.mode === 'dark' ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.04)" }}
+  contentStyle={{
+    backgroundColor: theme.colors.surface, 
+    border: `1px solid ${theme.colors.border}`,
+    borderRadius: theme.radius?.md || "12px",
+    color: theme.colors.text,
+    boxShadow: theme.shadows?.md || "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+    fontFamily: theme.typography.fontFamily.primary
+  }}
+  itemStyle={{
+    fontWeight: 600
+  }}
+  formatter={(value, name) => [`${value} units`, name === "sold" ? "Sold" : "Stock"]}
+  labelFormatter={(label, payload) => {
+    if (!payload?.length) return label;
+    return `${label}`;
+  }}
+/>
+                <Bar
+                  dataKey="sold"
+                  fill={theme.colors.primary || "#3b82f6"}
+                  radius={[4, 4, 0, 0]}
+                  barSize={20}
+                />
+                <Bar
+                  dataKey="stock"
+                  fill="rgba(255, 255, 255, 0.15)"
+                  radius={[4, 4, 0, 0]}
+                  barSize={20}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
-
-        <div
-          style={{
-            fontWeight: "700",
-            color: "#10b981"
-          }}
-        >
-          {product.totalSold} sold
-        </div>
       </div>
-    ))}
-  </div>
 
-  {/* DEAD STOCK */}
-  <div
-    style={{
-      backgroundColor: theme.surface,
-      borderRadius: "16px",
-      padding: "20px",
-      border: `1px solid ${theme.border}`
-    }}
-  >
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        marginBottom: "20px"
-      }}
-    >
-      <ShieldAlert color="#ef4444" />
-      <h3 style={{ margin: 0 }}>
-        Dead Stock Alerts
-      </h3>
-    </div>
-
-    {deadStockProducts.slice(0, 5).map(product => (
+      {/* FOOTER STATS */}
       <div
-        key={product.productId}
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          padding: "10px 0",
-          borderBottom: `1px solid ${theme.border}`
+          display: "grid",
+          gridTemplateColumns: "repeat(5, 1fr)",
+          gap: "20px"
         }}
       >
-        <div>
-          <strong>{product.productName}</strong>
-
-          <div
-            style={{
-              fontSize: "0.8rem",
-              color: theme.muted
-            }}
-          >
-            {product.daysInInventory} days idle
-          </div>
-        </div>
-
-        <div
-          style={{
-            color: "#ef4444",
-            fontWeight: "700"
-          }}
-        >
-          {product.riskLevel}
-        </div>
+        <MiniStat theme={theme} label="Critical Inventory" val={criticalStockCount} sub="Products" />
+        <MiniStat theme={theme} label="Fast Movers" val={fastMovingCount} sub="Products" />
+        <MiniStat theme={theme} label="Total Stock Value" val={`$${stats.totalSales.toLocaleString()}`} sub="Inventory worth" />
+        <MiniStat theme={theme} label="Reorder Suggestions" val={reorderSuggestions.length} sub="Items" />
+        <MiniStat theme={theme} label="Dead Stock" val={deadStockCount} sub="Potential loss" />
       </div>
-    ))}
-  </div>
-
-</div>
     </div>
   );
+};
+
+// ================= STYLES =================
+
+const cardStyle = (theme) => ({
+  background: theme.colors.surface,
+  border: `1px solid ${theme.colors.border}`,
+  borderRadius: theme.radius?.xl || "24px",
+  padding: "28px",
+  boxShadow: theme.shadows?.sm || "none"
+});
+
+const iconButtonStyle = (theme) => ({
+  padding: "8px",
+  borderRadius: theme.radius?.md || "12px",
+  backgroundColor: "rgba(255, 255, 255, 0.03)",
+  border: `1px solid rgba(255, 255, 255, 0.08)`,
+  cursor: "pointer",
+  color: theme.colors.text,
+  transition: "all 0.2s ease"
+});
+
+const badgeStyle = {
+  position: "absolute",
+  top: "-4px",
+  right: "-4px",
+  backgroundColor: "#3b82f6",
+  color: "white",
+  fontSize: "10px",
+  width: "16px",
+  height: "16px",
+  borderRadius: "50%",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontWeight: "800"
+};
+
+const cardHeader = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center"
+};
+
+const cardTitle = (theme) => ({
+  margin: 0,
+  fontSize: theme.typography?.fontSize?.lg || "16px",
+  fontWeight: theme.typography?.fontWeight?.bold || "700",
+  color: theme.colors.text,
+  letterSpacing: "0.2px"
+});
+
+const pillStyle = {
+  backgroundColor: "rgba(16, 185, 129, 0.15)",
+  color: "#10b981",
+  padding: "4px 10px",
+  borderRadius: "20px",
+  fontSize: "11px",
+  fontWeight: "700",
+  letterSpacing: "0.5px",
+  textTransform: "uppercase"
+};
+
+const selectStyle = (theme) => ({
+  backgroundColor: "rgba(255, 255, 255, 0.03)",
+  border: `1px solid rgba(255, 255, 255, 0.1)`,
+  borderRadius: theme.radius?.sm || "8px",
+  padding: "6px 12px",
+  fontSize: "13px",
+  color: "#ffffff",
+  outline: "none",
+  cursor: "pointer"
+});
+
+const centerLabel = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  textAlign: "center"
+};
+
+const legendRow = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "8px 0"
 };
 
 export default Dashboard;

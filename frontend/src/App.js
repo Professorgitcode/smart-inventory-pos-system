@@ -1,49 +1,100 @@
-import React, { useState, useEffect } from "react";
-import Sidebar from "./layout/Sidebar";
-import Navbar from "./layout/Navbar";
+import React from "react";
+import {BrowserRouter, Routes, Route} from "react-router-dom";
+import Navbar from "./components/layout/navbar/Navbar";
+import Sidebar from "./components/layout/sidebar/Sidebar";
+import { useTheme } from "./context/ThemeContext";
 import Dashboard from "./pages/Dashboard";
 import Inventory from "./pages/Inventory";
 import POS from "./pages/POS";
 import SalesReports from "./pages/SalesReports";
 import InventoryInsights from "./pages/InventoryInsights";
+import Forecasting from "./pages/Forecasting";
+import SupplierIntelligence from "./pages/SupplierIntelligence";
 
 const App = () => {
-  const [activePage, setActivePage] = useState("dashboard");
-  const [isDark, setIsDark] = useState(() => {
-    return localStorage.getItem("theme") === "dark";
-  });
-
-  useEffect(() => {
-    localStorage.setItem("theme", isDark ? "dark" : "light");
-  }, [isDark]);
-
-  const toggleTheme = () => setIsDark(!isDark);
-
-  const theme = {
-    bg: isDark ? "#0f172a" : "#f8fafc",
-    surface: isDark ? "#1e293b" : "#ffffff",
-    text: isDark ? "#f8fafc" : "#0f172a",
-    border: isDark ? "#334155" : "#e2e8f0",
-    muted: isDark ? "#94a3b8" : "#64748b",
-    primary: "#2563eb"
-  };
+ const { theme, isDark, toggleTheme } = useTheme();
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: theme.bg, color: theme.text, transition: "0.3s" }}>
-      <Sidebar activePage={activePage} setActivePage={setActivePage} theme={theme} />
-      
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        <Navbar theme={theme} toggleTheme={toggleTheme} isDark={isDark} />
-        <main style={{ flex: 1, overflowY: "auto", padding: "32px" }}>
-          {activePage === "dashboard" && <Dashboard theme={theme} />}
-          {activePage === "inventory" && <Inventory theme={theme} />}
-          {activePage === "pos" && <POS theme={theme} />}
-          {activePage === "sales-reports" && <SalesReports theme={theme} />}
-          {activePage === "inventory-insights" && <InventoryInsights theme={theme} />}
+  <BrowserRouter>
+    <div
+      style={{
+        display: "flex",
+        minHeight: "100vh",
+        backgroundColor: theme.colors.background,
+        color: theme.colors.text,
+        transition: "0.25s ease",
+        overflow: "hidden"
+      }}
+    >
+      <Sidebar theme={theme} />
+
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          marginLeft: "270px",
+          backgroundColor: theme.colors.background
+        }}
+      >
+        <Navbar
+          theme={theme}
+          toggleTheme={toggleTheme}
+          isDark={isDark}
+        />
+
+        <main
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: "24px 32px",
+            marginTop: "64px",
+            backgroundColor:theme.colors.background
+          }}
+        >
+          <Routes>
+
+            <Route
+              path="/"
+              element={<Dashboard theme={theme} />}
+            />
+
+            <Route
+              path="/inventory"
+              element={<Inventory theme={theme} />}
+            />
+
+            <Route
+              path="/pos"
+              element={<POS theme={theme} />}
+            />
+
+            <Route
+              path="/sales-reports"
+              element={<SalesReports theme={theme} />}
+            />
+
+            <Route
+              path="/inventory-insights"
+              element={<InventoryInsights theme={theme} />}
+            />
+
+            <Route
+              path="/forecasting"
+              element={<Forecasting theme={theme} />}
+            />
+
+             <Route
+              path="/supplier-intelligence"
+              element={<SupplierIntelligence theme={theme} />}
+            />
+
+          </Routes>
         </main>
       </div>
     </div>
-  );
+  </BrowserRouter>
+);
 };
 
 export default App;

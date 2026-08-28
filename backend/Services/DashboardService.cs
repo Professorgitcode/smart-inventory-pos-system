@@ -43,17 +43,17 @@ public class DashboardService
             .ToListAsync();
             
             // SALES TREND (Daily Aggregation)
-       var salesTrend = await _context.Orders
-    .Where(o => o.CreatedAt > DateTime.UtcNow.AddYears(-10)) // filter invalid dates
-    .GroupBy(o => o.CreatedAt.Date)
-    .OrderBy(g => g.Key)
-    .Select(g => new SalesTrendDto
-    {
-        Date = g.Key.ToString("yyyy-MM-dd"),
-        TotalRevenue = g.Sum(x => x.TotalAmount),
-          OrderCount = g.Count()
-    })
-    .ToListAsync();
+        var salesTrend = await _context.Orders
+            .Where(o => o.CreatedAt > DateTime.UtcNow.AddYears(-10)) // filter invalid dates
+            .GroupBy(o => o.CreatedAt.Date)
+            .OrderBy(g => g.Key)
+            .Select(g => new SalesTrendDto
+            {
+                Date = g.Key.ToString("yyyy-MM-dd"),
+                TotalRevenue = g.Sum(x => x.TotalAmount),
+                OrderCount = g.Count()
+            })
+        .ToListAsync();
 
         return new DashboardDto
         {

@@ -130,15 +130,15 @@ const ReceiptModal = ({
             display: "flex",
             justifyContent: "space-between",
             padding: "12px 16px",
-            backgroundColor: theme.surface,
-            borderBottom: `1px solid ${theme.border}`
+            backgroundColor: theme.colors.surface,
+            borderBottom: `1px solid ${theme.colors.border}`
           }}
           className="hide-on-print"
         >
           <span
             style={{
               fontWeight: "700",
-              color: theme.text,
+              color: theme.colors.text,
               display: "flex",
               alignItems: "center",
               gap: "8px"
@@ -159,7 +159,7 @@ const ReceiptModal = ({
               onClick={handleManualPrint}
               style={{
                 cursor: "pointer",
-                color: theme.primary
+                color: theme.colors.primary
               }}
             />
 
@@ -168,7 +168,7 @@ const ReceiptModal = ({
               onClick={onClose}
               style={{
                 cursor: "pointer",
-                color: theme.muted
+                color: theme.colors.textMuted
               }}
             />
           </div>
