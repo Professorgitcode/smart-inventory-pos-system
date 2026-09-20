@@ -3,42 +3,20 @@ import ENDPOINTS from "../../api/endpoints";
 
 class DashboardService {
 
-  async getDashboard() {
-    const response =
-      await apiClient.get(
-        ENDPOINTS.DASHBOARD.ROOT
-      );
+    // ====================================
+    // GET COMPLETE DASHBOARD
+    // ====================================
+    async getDashboard() {
 
-    return response.data;
-  }
+        const response =
+            await apiClient.get(
+                ENDPOINTS.DASHBOARD.ROOT
+            );
 
-  async getStatistics() {
-    const response =
-      await apiClient.get(
-        ENDPOINTS.DASHBOARD.STATS
-      );
-
-    return response.data;
-  }
-
-  async getRecentOrders() {
-    const response =
-      await apiClient.get(
-        ENDPOINTS.DASHBOARD.RECENT_ORDERS
-      );
-
-    return response.data;
-  }
-
-  async getForecast() {
-    const response =
-      await apiClient.get(
-        ENDPOINTS.DASHBOARD.FORECAST
-      );
-
-    return response.data;
-  }
-
+        return response.data;
+    }
 }
 
-export default new DashboardService();
+const dashboardService = new DashboardService();
+
+export default dashboardService;

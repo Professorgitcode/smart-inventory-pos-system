@@ -3,17 +3,20 @@ import ENDPOINTS from "../../api/endpoints";
 
 class ForecastingService {
 
+    // ====================================
+    // GET GENERAL FORECAST
+    // ====================================
     async forecast() {
 
         const response =
             await apiClient.get(
-                ENDPOINTS.FORECASTING.ROOT
+                ENDPOINTS.FORECAST.ROOT
             );
 
         return response.data;
-
     }
-
 }
 
-export default new ForecastingService();
+const forecastingService = new ForecastingService();
+
+export default forecastingService;

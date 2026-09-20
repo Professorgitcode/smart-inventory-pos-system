@@ -1,198 +1,399 @@
-import React, { useEffect, useState } from "react";
+// ====================================
+// SUPPLIER INTELLIGENCE PAGE
+// ====================================
+//
+// Composition layer only.
+//
+// Responsibilities:
+// - Compose supplier UI components
+// - Manage UI-only state
+// - Connect UI events to business actions
+//
+// API access does not belong here.
+//
+// Architecture:
+//
+// Page
+//   ↓
+// useSuppliers
+//   ↓
+// Query / Mutation
+//   ↓
+// Repository
+//   ↓
+// Service
+//   ↓
+// apiClient
+//   ↓
+// Backend
+// ====================================
 
-import SupplierService from "../services/suppliers/SupplierService";
+import React, {
+    useMemo,
+    useState
+} from "react";
 
-import SupplierHeader from "../components/supplier/SupplierHeader";
-import SupplierKPIs from "../components/supplier/SupplierKPIs";
-import SupplierAnalytics from "../components/supplier/SupplierAnalytics";
-import SupplierTable from "../components/supplier/SupplierTable";
-import SupplierInsights from "../components/supplier/SupplierInsights";
-import AddSupplierModal from "../components/supplier/AddSupplierModal";
+import {
+    useTheme
+} from "../context/ThemeContext";
 
-import Toast from "../components/common/Toast";
+import useSuppliers
+    from "../hooks/business/suppliers/useSuppliers";
 
-const pageStyle = {
-  padding: "32px",
-  background:
-    "linear-gradient(135deg, #eef6fb 0%, #dbeafe 100%)",
-  minHeight: "100vh"
-};
+import useModal
+    from "../hooks/ui/useModal";
+
+import useToast
+    from "../hooks/ui/useToast";
+
+import usePagination
+    from "../hooks/ui/usePagination";
+
+import SupplierHeader
+    from "../components/supplier/SupplierHeader";
+
+import SupplierKPIs
+    from "../components/supplier/SupplierKPIs";
+
+import SupplierAnalytics
+    from "../components/supplier/SupplierAnalytics";
+
+import SupplierTable
+    from "../components/supplier/SupplierTable";
+
+import SupplierInsights
+    from "../components/supplier/SupplierInsights";
+
+import AddSupplierModal
+    from "../components/supplier/AddSupplierModal";
+
+import Toast
+    from "../components/common/Toast";
+
+// ====================================
+// COMPONENT
+// ====================================
 
 const SupplierIntelligence = () => {
-  const [suppliers, setSuppliers] = useState([]);
-  const [analytics, setAnalytics] = useState(null);
 
-  const [loading, setLoading] =
-    useState(true);
+    const {
+        theme
+    } = useTheme();
 
-  const [search, setSearch] =
-    useState("");
+    // ====================================
+    // BUSINESS STATE
+    // ====================================
 
-  const [showModal, setShowModal] =
-    useState(false);
+    const {
+        data: suppliers,
+        analytics,
+        loading,
+        error,
+        actions,
+        mutation
+    } = useSuppliers();
 
-  const [toast, setToast] =
-    useState({
-      isVisible: false,
-      header: "",
-      message: "",
-      type: "info"
-    });
+    // ====================================
+    // UI HOOKS
+    // ====================================
 
-  const showToast = (
-    header,
-    message,
-    type = "info"
-  ) => {
-    setToast({
-      isVisible: true,
-      header,
-      message,
-      type
-    });
-  };
+    const supplierModal =
+        useModal();
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
+    const toast =
+        useToast();
 
-      const [
-        suppliersData,
-        analyticsData
-      ] = await Promise.all([
-        SupplierService.getSuppliers(),
-        SupplierService.getAnalytics()
-      ]);
+    // ====================================
+    // SEARCH STATE
+    // ====================================
 
-      setSuppliers(suppliersData);
-      setAnalytics(analyticsData);
-    } catch {
-      showToast(
-        "Server Error",
-        "Failed to load supplier data",
-        "error"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+    const [
+        search,
+        setSearch
+    ] = useState("");
 
-  useEffect(() => {
-    loadData();
-  }, []);
+    // ====================================
+    // FILTER
+    // ====================================
 
-  const handleAddSupplier =
-    async (supplier) => {
-      try {
-        await SupplierService.createSupplier(supplier);
+    const filteredSuppliers =
+        useMemo(() => {
 
-        showToast(
-          "Success",
-          "Supplier created successfully",
-          "success"
+            const term =
+                search
+                    .trim()
+                    .toLowerCase();
+
+            if (!term) {
+                return suppliers;
+            }
+
+            return suppliers.filter(
+                supplier =>
+                    supplier.supplierName
+                        ?.toLowerCase()
+                        .includes(term)
+            );
+
+        }, [
+            suppliers,
+            search
+        ]);
+
+    // ====================================
+    // PAGINATION
+    // ====================================
+
+    const pagination =
+        usePagination(
+            filteredSuppliers,
+            10
         );
 
-        setShowModal(false);
+    // ====================================
+    // ADD SUPPLIER
+    // ====================================
 
-        await loadData();
-      } catch {
-        showToast(
-          "Server Error",
-          "Failed to create supplier",
-          "error"
-        );
-      }
-    };
+    const handleAddSupplier =
+        async supplier => {
 
-  const handleDeleteSupplier =
-    async (id) => {
-      const confirmDelete =
-        window.confirm(
-          "Delete this supplier?"
-        );
+            try {
 
-      if (!confirmDelete) return;
+                await actions.createSupplier(
+                    supplier
+                );
 
-      try {
-        await SupplierService.deleteSupplier(id);
+                supplierModal.reset();
 
-        showToast(
-          "Delete Confirmation",
-          "Supplier deleted successfully",
-          "info"
-        );
+                toast.success(
+                    "Supplier Created",
+                    "Supplier created successfully."
+                );
 
-        await loadData();
-      } catch {
-        showToast(
-          "Server Error",
-          "Failed to delete supplier",
-          "error"
-        );
-      }
-    };
+            } catch (operationError) {
 
-  const filteredSuppliers =
-    suppliers.filter((supplier) =>
-      supplier.supplierName
-        .toLowerCase()
-        .includes(
-          search.toLowerCase()
-        )
+                console.error(
+                    "Supplier creation failed:",
+                    operationError
+                );
+
+                toast.error(
+                    "Supplier Creation Failed",
+                    operationError?.message ||
+                    "Unable to create supplier."
+                );
+
+            }
+
+        };
+
+    // ====================================
+    // DELETE SUPPLIER
+    // ====================================
+
+    const handleDeleteSupplier =
+        async id => {
+
+            const confirmed =
+                window.confirm(
+                    "Delete this supplier?"
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+
+                await actions.deleteSupplier(
+                    id
+                );
+
+                toast.success(
+                    "Supplier Deleted",
+                    "Supplier deleted successfully."
+                );
+
+            } catch (operationError) {
+
+                console.error(
+                    "Supplier deletion failed:",
+                    operationError
+                );
+
+                toast.error(
+                    "Supplier Deletion Failed",
+                    operationError?.message ||
+                    "Unable to delete supplier."
+                );
+
+            }
+
+        };
+
+    // ====================================
+    // RENDER
+    // ====================================
+
+    return (
+
+        <div>
+
+            {/* ==================================
+                PAGE HEADER
+                ================================== */}
+
+            <SupplierHeader
+                onAddSupplier={
+                    supplierModal.open
+                }
+            />
+
+            {/* ==================================
+                KPI SECTION
+                ================================== */}
+
+            <section
+                style={{
+                    marginTop: "24px"
+                }}
+            >
+
+                <SupplierKPIs
+                    analytics={analytics}
+                    suppliers={suppliers}
+                />
+
+            </section>
+
+            {/* ==================================
+                ANALYTICS SECTION
+                ================================== */}
+
+            <section
+                style={{
+                    marginTop: "24px"
+                }}
+            >
+
+                <SupplierAnalytics
+                    analytics={analytics}
+                />
+
+            </section>
+
+            {/* ==================================
+                SUPPLIER DIRECTORY
+                ================================== */}
+
+            <section
+                style={{
+                    marginTop: "24px"
+                }}
+            >
+
+                <SupplierTable
+                    suppliers={
+                        pagination.data
+                    }
+                    search={search}
+                    setSearch={
+                        value =>
+                            setSearch(value)
+                    }
+                    onDelete={
+                        handleDeleteSupplier
+                    }
+                    loading={loading}
+                    error={error}
+                    isDeleting={
+                        mutation.isDeleting
+                    }
+                    pagination={{
+                        totalItems:
+                            pagination.pagination
+                                .totalItems,
+
+                        pageSize:
+                            pagination.pagination
+                                .pageSize,
+
+                        currentPage:
+                            pagination.pagination
+                                .currentPage,
+
+                        onPageChange:
+                            pagination.actions
+                                .goToPage
+                    }}
+                />
+
+            </section>
+
+            {/* ==================================
+                INSIGHTS
+                ================================== */}
+
+            <section
+                style={{
+                    marginTop: "24px"
+                }}
+            >
+
+                <SupplierInsights
+                    suppliers={
+                        suppliers
+                    }
+                />
+
+            </section>
+
+            {/* ==================================
+                ADD SUPPLIER MODAL
+                ================================== */}
+
+            <AddSupplierModal
+                isOpen={
+                    supplierModal.isOpen
+                }
+                onClose={
+                    supplierModal.reset
+                }
+                onSave={
+                    handleAddSupplier
+                }
+                isLoading={
+                    mutation.isCreating
+                }
+            />
+
+            {/* ==================================
+                TOAST
+                ================================== */}
+
+            <Toast
+                header={
+                    toast.toast.header
+                }
+                message={
+                    toast.toast.message
+                }
+                type={
+                    toast.toast.type
+                }
+                isVisible={
+                    toast.toast.isVisible
+                }
+                theme={theme}
+                onClose={
+                    toast.hide
+                }
+            />
+
+        </div>
+
     );
 
-  return (
-    <div style={pageStyle}>
-     <SupplierHeader
-  onAddSupplier={() =>
-    setShowModal(true)
-  }
-/>
-
-      <SupplierKPIs analytics={analytics} />
-
-      <SupplierAnalytics analytics={analytics} />
-
-      <SupplierTable
-        suppliers={filteredSuppliers}
-        search={search}
-        setSearch={setSearch}
-        onDelete={
-          handleDeleteSupplier
-        }
-      />
-
-      <SupplierInsights
-  suppliers={suppliers}
-/>
-
-
-      <AddSupplierModal
-        isOpen={showModal}
-        onClose={() =>
-          setShowModal(false)
-        }
-        onSave={
-          handleAddSupplier
-        }
-      />
-
-      <Toast
-        header={toast.header}
-        message={toast.message}
-        type={toast.type}
-        isVisible={
-          toast.isVisible
-        }
-        onClose={() =>
-          setToast({
-            ...toast,
-            isVisible: false
-          })
-        }
-      />
-    </div>
-  );
 };
 
 export default SupplierIntelligence;

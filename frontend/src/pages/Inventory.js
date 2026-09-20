@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Search, Plus, Edit3, Trash2 } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Edit3,
+  Trash2
+} from "lucide-react";
+
+import apiClient from "../api/apiClient";
+
+import { RoleGuard } from "../auth";
 import { useTheme } from "../context/ThemeContext";
 import ProductModal from "../components/ProductModal";
 import Toast from "../components/common/Toast";

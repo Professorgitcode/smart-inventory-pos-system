@@ -3,6 +3,10 @@ import ENDPOINTS from "../../api/endpoints";
 
 class ReportsService {
 
+    // ====================================
+    // GET REPORT
+    // ====================================
+
     async getReport(params = {}) {
 
         const response =
@@ -14,42 +18,70 @@ class ReportsService {
             );
 
         return response.data;
-
     }
 
-    async exportPDF() {
+    // ====================================
+    // EXPORT PDF
+    // ====================================
+
+    async exportPDF(params = {}) {
 
         return apiClient.get(
             ENDPOINTS.REPORTS.EXPORT_PDF,
             {
+                params,
                 responseType: "blob"
             }
         );
-
     }
 
-    async exportCSV() {
+    // ====================================
+    // EXPORT CSV
+    // ====================================
+
+    async exportCSV(params = {}) {
 
         return apiClient.get(
             ENDPOINTS.REPORTS.EXPORT_CSV,
             {
+                params,
                 responseType: "blob"
             }
         );
-
     }
 
-    async exportExcel() {
+    // ====================================
+    // EXPORT EXCEL
+    // ====================================
+
+    async exportExcel(params = {}) {
 
         return apiClient.get(
             ENDPOINTS.REPORTS.EXPORT_EXCEL,
             {
+                params,
                 responseType: "blob"
             }
         );
-
     }
 
+    // ====================================
+    // EXPORT DOCX
+    // ====================================
+
+    async exportDocx(params = {}) {
+
+        return apiClient.get(
+            ENDPOINTS.REPORTS.EXPORT_DOCX,
+            {
+                params,
+                responseType: "blob"
+            }
+        );
+    }
 }
 
-export default new ReportsService();
+const reportsService =
+    new ReportsService();
+
+export default reportsService;

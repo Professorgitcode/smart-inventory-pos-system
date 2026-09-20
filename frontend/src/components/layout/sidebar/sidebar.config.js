@@ -69,7 +69,7 @@ export const sidebarNavigation = [
             },
             {
                 label: "AI Procurement",
-                disabled: true,
+                path: "/ai-procurement",
                 icon: BrainCircuit,
                 badge: "AI"
             }
@@ -82,12 +82,13 @@ export const sidebarNavigation = [
         items: [
             {
                 label: "Users",
-                disabled: true,
-                icon: Users
-            },
+                path: "/users",
+                icon: Users,
+                roles: ["Admin"]
+},
             {
                 label: "Audit Trail",
-                disabled: true,
+                path: "/audit-trail",
                 icon: ShieldCheck
             },
             {

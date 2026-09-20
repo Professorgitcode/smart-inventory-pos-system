@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using backend.Services;
 using backend.DTOs;
@@ -7,6 +8,7 @@ namespace backend.Controllers
 {
     [ApiController]
     [Route("api/products")]
+    [Authorize]
     public class ProductsController : ControllerBase
     {
         private readonly ProductService _service;
@@ -35,6 +37,7 @@ namespace backend.Controllers
 
         // ================= POST =================
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddProduct(ProductDto dto)
         {
             var product = new Product
@@ -51,6 +54,7 @@ namespace backend.Controllers
 
         // ================= PUT =================
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateProduct(int id, ProductDto dto)
         {
             var updatedProduct = new Product
@@ -70,6 +74,7 @@ namespace backend.Controllers
 
         // ================= DELETE =================
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             var success = await _service.Delete(id);

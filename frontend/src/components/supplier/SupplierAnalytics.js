@@ -1,266 +1,359 @@
+// ====================================
+// SUPPLIER ANALYTICS
+// ====================================
+
 import React from "react";
 
 import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  PieChart,
-  Pie,
-  Cell,
-  Legend
-} from "recharts";
+    Card,
+    Badge,
+    Alert
+} from "../ui";
 
-const glassStyle = {
-  background: "rgba(255,255,255,0.65)",
-  backdropFilter: "blur(20px)",
-  border: "1px solid rgba(255,255,255,0.2)",
-  borderRadius: "20px",
-  boxShadow: "0 8px 32px rgba(52,114,156,0.15)"
-};
+import {
+    useTheme
+} from "../../context/ThemeContext";
 
-const SupplierAnalytics = ({ analytics }) => {
+// ====================================
+// HELPERS
+// ====================================
 
-  // Prevent crashes while loading
-  if (!analytics) {
-    return (
-      <div
-        style={{
-          ...glassStyle,
-          padding: "30px",
-          marginBottom: "30px",
-          textAlign: "center"
-        }}
-      >
-        Loading analytics...
-      </div>
+const clamp = (
+    value,
+    min = 0,
+    max = 100
+) =>
+    Math.min(
+        max,
+        Math.max(
+            min,
+            Number(value) || 0
+        )
     );
-  }
 
-  // Dynamic Health Score
-  const healthScore = Math.round(
-    (
-      analytics.averageDelivery +
-      analytics.averageRating * 10
-    ) / 2
-  );
+// ====================================
+// PERFORMANCE BAR
+// ====================================
 
-  // Temporary trend data
-  // Later this will come from the backend
-  const performanceData = [
-    {
-      month: "Jan",
-      rating:
-        analytics.averageRating - 0.5,
-      delivery:
-        analytics.averageDelivery - 8
-    },
-    {
-      month: "Feb",
-      rating:
-        analytics.averageRating - 0.3,
-      delivery:
-        analytics.averageDelivery - 5
-    },
-    {
-      month: "Mar",
-      rating:
-        analytics.averageRating - 0.2,
-      delivery:
-        analytics.averageDelivery - 3
-    },
-    {
-      month: "Apr",
-      rating:
-        analytics.averageRating,
-      delivery:
-        analytics.averageDelivery
-    },
-    {
-      month: "May",
-      rating:
-        analytics.averageRating + 0.1,
-      delivery:
-        analytics.averageDelivery + 2
-    },
-    {
-      month: "Jun",
-      rating:
-        analytics.averageRating + 0.2,
-      delivery:
-        analytics.averageDelivery + 4
-    }
-  ];
+const PerformanceBar = ({
+    label,
+    value,
+    displayValue,
+    isDark
+}) => {
 
-  const healthData = [
-    {
-      name: "Healthy",
-      value: healthScore,
-      color: "#34729C"
-    },
-    {
-      name: "Remaining",
-      value: 100 - healthScore,
-      color: "#E5E7EB"
-    }
-  ];
+    const {
+        theme
+    } = useTheme();
 
-  return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "2fr 1fr",
-        gap: "24px",
-        marginBottom: "32px"
-      }}
-    >
+    const percentage =
+        clamp(value);
 
-      {/* Performance Chart */}
-
-      <div
-        style={{
-          ...glassStyle,
-          padding: "24px"
-        }}
-      >
-        <h3
-          style={{
-            marginBottom: "20px",
-            color: "#163042"
-          }}
-        >
-          Supplier Performance Trend
-        </h3>
-
-        <ResponsiveContainer
-          width="100%"
-          height={300}
-        >
-          <LineChart
-            data={performanceData}
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="#E5E7EB"
-            />
-
-            <XAxis dataKey="month" />
-
-            <YAxis />
-
-            <Tooltip />
-
-            <Legend />
-
-            <Line
-              type="monotone"
-              dataKey="rating"
-              stroke="#34729C"
-              strokeWidth={3}
-              name="Rating"
-            />
-
-            <Line
-              type="monotone"
-              dataKey="delivery"
-              stroke="#6EC1D1"
-              strokeWidth={3}
-              name="Delivery %"
-            />
-
-          </LineChart>
-        </ResponsiveContainer>
-
-      </div>
-
-      {/* Health Score */}
-
-      <div
-        style={{
-          ...glassStyle,
-          padding: "24px",
-          position: "relative"
-        }}
-      >
-
-        <h3
-          style={{
-            marginBottom: "20px",
-            color: "#163042"
-          }}
-        >
-          Supplier Health Score
-        </h3>
-
-        <ResponsiveContainer
-          width="100%"
-          height={260}
-        >
-          <PieChart>
-
-            <Pie
-              data={healthData}
-              innerRadius={70}
-              outerRadius={90}
-              dataKey="value"
-            >
-
-              {
-                healthData.map(
-                  (entry, index) => (
-                    <Cell
-                      key={index}
-                      fill={entry.color}
-                    />
-                  )
-                )
-              }
-
-            </Pie>
-
-          </PieChart>
-
-        </ResponsiveContainer>
+    return (
 
         <div
-          style={{
-            position: "absolute",
-            top: "53%",
-            left: "50%",
-            transform:
-              "translate(-50%, -50%)",
-            textAlign: "center"
-          }}
+            style={{
+                marginBottom: "22px"
+            }}
         >
 
-          <div
-            style={{
-              fontSize: "34px",
-              fontWeight: "700",
-              color: "#163042"
-            }}
-          >
-            {healthScore}%
-          </div>
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "8px",
+                    fontSize:
+                        theme.typography.fontSize.sm
+                }}
+            >
 
-          <div
-            style={{
-              color: "#6B7280",
-              fontSize: "14px"
-            }}
-          >
-            Overall Health
-          </div>
+                <span
+                    style={{
+                        color:
+                            theme.colors.text
+                    }}
+                >
+                    {label}
+                </span>
+
+                <strong
+                    style={{
+                        color:
+                            theme.colors.text
+                    }}
+                >
+                    {displayValue}
+                </strong>
+
+            </div>
+
+            <div
+                style={{
+                    width: "100%",
+                    height: "8px",
+                    borderRadius:
+                        theme.radius.full,
+                    backgroundColor:
+                        isDark
+                            ? "rgba(255,255,255,0.08)"
+                            : theme.colors.border,
+                    overflow: "hidden"
+                }}
+            >
+
+                <div
+                    style={{
+                        width:
+                            `${percentage}%`,
+                        height: "100%",
+                        borderRadius:
+                            theme.radius.full,
+                        backgroundColor:
+                            theme.colors.primary,
+                        transition:
+                            "width 300ms ease"
+                    }}
+                />
+
+            </div>
 
         </div>
 
-      </div>
+    );
+};
 
-    </div>
-  );
+// ====================================
+// COMPONENT
+// ====================================
+
+const SupplierAnalytics = ({
+    analytics
+}) => {
+
+    const {
+        theme,
+        isDark
+    } = useTheme();
+
+    if (!analytics) {
+
+        return (
+
+            <Alert
+                variant="info"
+                isDark={isDark}
+                title="Supplier analytics"
+            >
+                Supplier analytics are
+                loading.
+            </Alert>
+
+        );
+
+    }
+
+    const averageRating =
+        clamp(
+            (
+                Number(
+                    analytics.averageRating
+                ) / 5
+            ) * 100
+        );
+
+    const delivery =
+        clamp(
+            analytics.averageDelivery
+        );
+
+    // ====================================
+    // NORMALIZED HEALTH SCORE
+    // ====================================
+
+    const healthScore =
+        Math.round(
+            (
+                averageRating +
+                delivery
+            ) / 2
+        );
+
+    const healthVariant =
+        healthScore >= 80
+            ? "success"
+            : healthScore >= 60
+                ? "warning"
+                : "danger";
+
+    return (
+
+        <div
+            style={{
+                display: "grid",
+                gridTemplateColumns:
+                    "2fr 1fr",
+                gap: "24px"
+            }}
+        >
+
+            {/* ==================================
+                CURRENT PERFORMANCE
+                ================================== */}
+
+            <Card
+                variant="standard"
+                isDark={isDark}
+            >
+
+                <h3
+                    style={{
+                        marginTop: 0,
+                        marginBottom: "24px",
+                        color:
+                            theme.colors.text
+                    }}
+                >
+                    Current Supplier Performance
+                </h3>
+
+                <PerformanceBar
+                    label="Average Rating"
+                    value={averageRating}
+                    displayValue={
+                        `${Number(
+                            analytics.averageRating || 0
+                        ).toFixed(1)} / 5`
+                    }
+                    isDark={isDark}
+                />
+
+                <PerformanceBar
+                    label="On-Time Delivery"
+                    value={delivery}
+                    displayValue={
+                        `${Number(
+                            analytics.averageDelivery || 0
+                        ).toFixed(0)}%`
+                    }
+                    isDark={isDark}
+                />
+
+                <div
+                    style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                            "repeat(2, 1fr)",
+                        gap: "16px"
+                    }}
+                >
+
+                    <div>
+                        <div
+                            style={{
+                                fontSize: "12px",
+                                color:
+                                    theme.colors.textMuted
+                            }}
+                        >
+                            Average Lead Time
+                        </div>
+
+                        <strong>
+                            {
+                                Number(
+                                    analytics.averageLeadTime || 0
+                                ).toFixed(0)
+                            } Days
+                        </strong>
+                    </div>
+
+                    <div>
+                        <div
+                            style={{
+                                fontSize: "12px",
+                                color:
+                                    theme.colors.textMuted
+                            }}
+                        >
+                            Active Suppliers
+                        </div>
+
+                        <strong>
+                            {
+                                analytics.activeSuppliers || 0
+                            }
+                        </strong>
+                    </div>
+
+                </div>
+
+            </Card>
+
+            {/* ==================================
+                HEALTH SCORE
+                ================================== */}
+
+            <Card
+                variant="glass"
+                isDark={isDark}
+                style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center"
+                }}
+            >
+
+                <div
+                    style={{
+                        fontSize:
+                            theme.typography.fontSize.md,
+                        fontWeight:
+                            theme.typography.fontWeight.semibold,
+                        color:
+                            theme.colors.text
+                    }}
+                >
+                    Supplier Health Score
+                </div>
+
+                <div
+                    style={{
+                        marginTop: "24px",
+                        fontSize: "56px",
+                        lineHeight: 1,
+                        fontWeight:
+                            theme.typography.fontWeight.extrabold,
+                        color:
+                            theme.colors.primary
+                    }}
+                >
+                    {healthScore}%
+                </div>
+
+                <Badge
+                    variant={healthVariant}
+                    isDark={isDark}
+                    style={{
+                        marginTop: "16px"
+                    }}
+                >
+                    {
+                        healthVariant === "success"
+                            ? "Healthy"
+                            : healthVariant === "warning"
+                                ? "Needs Monitoring"
+                                : "High Attention"
+                    }
+                </Badge>
+
+            </Card>
+
+        </div>
+
+    );
+
 };
 
 export default SupplierAnalytics;

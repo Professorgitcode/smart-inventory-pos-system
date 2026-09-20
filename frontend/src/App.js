@@ -1,8 +1,28 @@
+// ====================================
+// APPLICATION ROUTER
+// ====================================
+
 import React from "react";
-import {BrowserRouter, Routes, Route} from "react-router-dom";
-import Navbar from "./components/layout/navbar/Navbar";
-import Sidebar from "./components/layout/sidebar/Sidebar";
-import { useTheme } from "./context/ThemeContext";
+
+import {
+  Routes,
+  Route,
+  Navigate
+} from "react-router-dom";
+
+import {
+  ProtectedRoute,
+  PublicRoute,
+  RoleGuard
+} from "./auth";
+
+import AppLayout from "./layouts/AppLayout";
+import ThemedPage from "./layouts/ThemedPage";
+import AppRefreshLoader from "./components/AppRefreshLoader";
+
+import { useAuth } from "./auth";
+import Login from "./pages/Login";
+
 import Dashboard from "./pages/Dashboard";
 import Inventory from "./pages/Inventory";
 import POS from "./pages/POS";
@@ -10,91 +30,127 @@ import SalesReports from "./pages/SalesReports";
 import InventoryInsights from "./pages/InventoryInsights";
 import Forecasting from "./pages/Forecasting";
 import SupplierIntelligence from "./pages/SupplierIntelligence";
+import AuditTrail from "./pages/AuditTrail";
+import Users from "./pages/Users";
+import AIProcurement from "./pages/AIProcurement";
 
 const App = () => {
- const { theme, isDark, toggleTheme } = useTheme();
-
+  const { isInitializing } = useAuth();
   return (
-  <BrowserRouter>
-    <div
-      style={{
-        display: "flex",
-        minHeight: "100vh",
-        backgroundColor: theme.colors.background,
-        color: theme.colors.text,
-        transition: "0.25s ease",
-        overflow: "hidden"
-      }}
-    >
-      <Sidebar theme={theme} />
+     <>
+      <AppRefreshLoader
+        isLoading={isInitializing}
+        message="Restoring your Smart Inventory session..."
+      />
+    <Routes>
 
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          marginLeft: "270px",
-          backgroundColor: theme.colors.background
-        }}
-      >
-        <Navbar
-          theme={theme}
-          toggleTheme={toggleTheme}
-          isDark={isDark}
+      {/* ==================================
+          PUBLIC
+          ================================== */}
+
+      <Route element={<PublicRoute />}>
+        <Route
+          path="/login"
+          element={<Login />}
         />
+      </Route>
 
-        <main
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: "24px 32px",
-            marginTop: "64px",
-            backgroundColor:theme.colors.background
-          }}
-        >
-          <Routes>
+      {/* ==================================
+          PROTECTED APPLICATION
+          ================================== */}
 
-            <Route
-              path="/"
-              element={<Dashboard theme={theme} />}
-            />
+      <Route element={<ProtectedRoute />}>
 
-            <Route
-              path="/inventory"
-              element={<Inventory theme={theme} />}
-            />
+        <Route element={<AppLayout />}>
 
-            <Route
-              path="/pos"
-              element={<POS theme={theme} />}
-            />
+          <Route
+            index
+            element={
+              <ThemedPage
+                component={Dashboard}
+              />
+            }
+          />
 
-            <Route
-              path="/sales-reports"
-              element={<SalesReports theme={theme} />}
-            />
+          <Route
+            path="inventory"
+            element={
+              <ThemedPage
+                component={Inventory}
+              />
+            }
+          />
 
-            <Route
-              path="/inventory-insights"
-              element={<InventoryInsights theme={theme} />}
-            />
+          <Route
+            path="pos"
+            element={
+              <ThemedPage
+                component={POS}
+              />
+            }
+          />
 
-            <Route
-              path="/forecasting"
-              element={<Forecasting theme={theme} />}
-            />
+          <Route
+            path="sales-reports"
+            element={
+              <ThemedPage
+                component={SalesReports}
+              />
+            }
+          />
 
-             <Route
-              path="/supplier-intelligence"
-              element={<SupplierIntelligence theme={theme} />}
-            />
+          <Route
+            path="inventory-insights"
+            element={
+              <ThemedPage
+                component={InventoryInsights}
+              />
+            }
+          />
 
-          </Routes>
-        </main>
-      </div>
-    </div>
-  </BrowserRouter>
-);
+          <Route
+            path="forecasting"
+            element={
+              <ThemedPage
+                component={Forecasting}
+              />
+            }
+          />
+
+          <Route
+            path="supplier-intelligence"
+            element={<SupplierIntelligence />}
+          />
+
+          <Route
+            path="audit-trail"
+            element={<AuditTrail />}
+          />
+
+          <Route
+            path="users"
+            element={
+                <RoleGuard
+                  roles={["Admin"]}
+                  fallback={<Navigate to="/" replace />}
+                >
+                <Users />
+              </RoleGuard>
+            }
+          />
+
+          <Route
+            path="ai-procurement"
+            element={<AIProcurement />}
+          />
+
+        </Route>
+
+      </Route>
+
+    </Routes>
+    </>
+  );
 };
 
 export default App;

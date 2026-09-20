@@ -1,232 +1,362 @@
-import React, { useState } from "react";
-import { X, Building2, User, Mail, Phone } from "lucide-react";
+// ====================================
+// ADD SUPPLIER MODAL
+// ====================================
 
-const overlayStyle = {
-  position: "fixed",
-  inset: 0,
-  background: "rgba(15,23,42,0.35)",
-  backdropFilter: "blur(6px)",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  zIndex: 999
-};
+import React, {
+    useState
+} from "react";
 
-const modalStyle = {
-  width: "520px",
-  background: "rgba(255,255,255,0.75)",
-  backdropFilter: "blur(20px)",
-  border: "1px solid rgba(255,255,255,0.2)",
-  borderRadius: "24px",
-  boxShadow: "0 8px 32px rgba(52,114,156,0.15)",
-  overflow: "hidden"
-};
+import {
+    Building2,
+    User,
+    Mail,
+    Phone
+} from "lucide-react";
 
-const headerStyle = {
-  padding: "24px",
-  borderBottom: "1px solid rgba(0,0,0,0.05)",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center"
-};
+import {
+    Modal,
+    Button
+} from "../ui";
 
-const inputWrapper = {
-  display: "flex",
-  alignItems: "center",
-  gap: "10px",
-  background: "rgba(255,255,255,0.8)",
-  border: "1px solid rgba(0,0,0,0.08)",
-  borderRadius: "12px",
-  padding: "12px"
-};
+import {
+    useTheme
+} from "../../context/ThemeContext";
 
-const inputStyle = {
-  border: "none",
-  outline: "none",
-  background: "transparent",
-  width: "100%",
-  fontSize: "14px"
-};
+// ====================================
+// INITIAL FORM
+// ====================================
 
-const buttonPrimary = {
-  background: "#34729C",
-  color: "#fff",
-  border: "none",
-  padding: "12px 20px",
-  borderRadius: "12px",
-  cursor: "pointer",
-  fontWeight: 600
-};
-
-const buttonSecondary = {
-  background: "#F1F5F9",
-  color: "#163042",
-  border: "none",
-  padding: "12px 20px",
-  borderRadius: "12px",
-  cursor: "pointer",
-  fontWeight: 600
-};
-
-const AddSupplierModal = ({
-  isOpen,
-  onClose,
-  onSave
-}) => {
-  const [form, setForm] = useState({
+const INITIAL_FORM = {
     supplierName: "",
     contactPerson: "",
     email: "",
     phone: ""
-  });
+};
 
-  if (!isOpen) return null;
+// ====================================
+// COMPONENT
+// ====================================
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+const AddSupplierModal = ({
+    isOpen,
+    onClose,
+    onSave,
+    isLoading = false
+}) => {
 
-    onSave(form);
+    const {
+        isDark,
+        theme
+    } = useTheme();
 
-    setForm({
-      supplierName: "",
-      contactPerson: "",
-      email: "",
-      phone: ""
-    });
-  };
+    const [
+        form,
+        setForm
+    ] = useState(
+        INITIAL_FORM
+    );
 
-  return (
-    <div style={overlayStyle}>
-      <div style={modalStyle}>
-        
-        <div style={headerStyle}>
-          <div>
-            <h2
-              style={{
-                margin: 0,
-                color: "#163042"
-              }}
-            >
-              Add Supplier
-            </h2>
+    // ====================================
+    // CHANGE
+    // ====================================
 
-            <p
-              style={{
-                marginTop: "5px",
-                color: "#64748B",
-                fontSize: "14px"
-              }}
-            >
-              Register a new supplier in the system
-            </p>
-          </div>
+    const updateField = (
+        field,
+        value
+    ) => {
 
-          <X
-            size={20}
-            style={{ cursor: "pointer" }}
-            onClick={onClose}
-          />
-        </div>
+        setForm(
+            previous => ({
+                ...previous,
+                [field]:
+                    value
+            })
+        );
 
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            padding: "24px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "16px"
-          }}
-        >
-          
-          <div style={inputWrapper}>
-            <Building2 size={18} color="#34729C" />
-            <input
-              style={inputStyle}
-              placeholder="Supplier Name"
-              value={form.supplierName}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  supplierName: e.target.value
-                })
-              }
-            />
-          </div>
+    };
 
-          <div style={inputWrapper}>
-            <User size={18} color="#34729C" />
-            <input
-              style={inputStyle}
-              placeholder="Contact Person"
-              value={form.contactPerson}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  contactPerson: e.target.value
-                })
-              }
-            />
-          </div>
+    // ====================================
+    // SUBMIT
+    // ====================================
 
-          <div style={inputWrapper}>
-            <Mail size={18} color="#34729C" />
-            <input
-              style={inputStyle}
-              type="email"
-              placeholder="Email Address"
-              value={form.email}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  email: e.target.value
-                })
-              }
-            />
-          </div>
+    const handleSubmit =
+        async event => {
 
-          <div style={inputWrapper}>
-            <Phone size={18} color="#34729C" />
-            <input
-              style={inputStyle}
-              placeholder="Phone Number"
-              value={form.phone}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  phone: e.target.value
-                })
-              }
-            />
-          </div>
+            event.preventDefault();
 
-          <div
+            await onSave(form);
+
+            setForm(
+                INITIAL_FORM
+            );
+
+        };
+
+    // ====================================
+    // INPUT STYLE
+    // ====================================
+
+    const inputStyle = {
+        width: "100%",
+        padding: "10px 12px",
+        border:
+            `1px solid ${
+                theme.colors.border
+            }`,
+        borderRadius:
+            theme.radius.md,
+        backgroundColor:
+            isDark
+                ? "rgba(255,255,255,0.04)"
+                : theme.colors.background,
+        color:
+            theme.colors.text,
+        outline: "none",
+        boxSizing:
+            "border-box"
+    };
+
+    // ====================================
+    // FIELD
+    // ====================================
+
+    const Field = ({
+        icon: Icon,
+        label,
+        value,
+        onChange,
+        type = "text",
+        placeholder
+    }) => (
+
+        <label
             style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: "12px",
-              marginTop: "10px"
+                display: "flex",
+                flexDirection:
+                    "column",
+                gap: "7px"
             }}
-          >
-            <button
-              type="button"
-              onClick={onClose}
-              style={buttonSecondary}
-            >
-              Cancel
-            </button>
+        >
 
-            <button
-              type="submit"
-              style={buttonPrimary}
+            <span
+                style={{
+                    fontSize: "12px",
+                    fontWeight:
+                        theme.typography.fontWeight.semibold,
+                    color:
+                        theme.colors.text
+                }}
             >
-              Save Supplier
-            </button>
-          </div>
+                {label}
+            </span>
 
-        </form>
-      </div>
-    </div>
-  );
+            <div
+                style={{
+                    position: "relative"
+                }}
+            >
+
+                <Icon
+                    size={17}
+                    style={{
+                        position: "absolute",
+                        left: "12px",
+                        top: "50%",
+                        transform:
+                            "translateY(-50%)",
+                        color:
+                            theme.colors.primary
+                    }}
+                />
+
+                <input
+                    type={type}
+                    value={value}
+                    placeholder={placeholder}
+                    onChange={
+                        event =>
+                            onChange(
+                                event.target.value
+                            )
+                    }
+                    disabled={
+                        isLoading
+                    }
+                    style={{
+                        ...inputStyle,
+                        paddingLeft:
+                            "40px"
+                    }}
+                    required
+                />
+
+            </div>
+
+        </label>
+
+    );
+
+    return (
+
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Add Supplier"
+            size="md"
+            isDark={isDark}
+            closeOnOverlayClick={
+                !isLoading
+            }
+        >
+
+            <form
+                onSubmit={
+                    handleSubmit
+                }
+            >
+
+                <p
+                    style={{
+                        marginTop: 0,
+                        marginBottom:
+                            "24px",
+                        color:
+                            theme.colors.textMuted,
+                        fontSize:
+                            theme.typography.fontSize.sm
+                    }}
+                >
+                    Register a new supplier
+                    in the system.
+                </p>
+
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection:
+                            "column",
+                        gap: "16px"
+                    }}
+                >
+
+                    <Field
+                        icon={Building2}
+                        label="Supplier Name"
+                        value={
+                            form.supplierName
+                        }
+                        onChange={
+                            value =>
+                                updateField(
+                                    "supplierName",
+                                    value
+                                )
+                        }
+                        placeholder={
+                            "Enter supplier name"
+                        }
+                    />
+
+                    <Field
+                        icon={User}
+                        label="Contact Person"
+                        value={
+                            form.contactPerson
+                        }
+                        onChange={
+                            value =>
+                                updateField(
+                                    "contactPerson",
+                                    value
+                                )
+                        }
+                        placeholder={
+                            "Enter contact person"
+                        }
+                    />
+
+                    <Field
+                        icon={Mail}
+                        label="Email Address"
+                        type="email"
+                        value={
+                            form.email
+                        }
+                        onChange={
+                            value =>
+                                updateField(
+                                    "email",
+                                    value
+                                )
+                        }
+                        placeholder={
+                            "Enter email address"
+                        }
+                    />
+
+                    <Field
+                        icon={Phone}
+                        label="Phone Number"
+                        value={
+                            form.phone
+                        }
+                        onChange={
+                            value =>
+                                updateField(
+                                    "phone",
+                                    value
+                                )
+                        }
+                        placeholder={
+                            "Enter phone number"
+                        }
+                    />
+
+                </div>
+
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent:
+                            "flex-end",
+                        gap: "12px",
+                        marginTop:
+                            "24px"
+                    }}
+                >
+
+                    <Button
+                        type="button"
+                        variant="outline"
+                        isDark={isDark}
+                        disabled={
+                            isLoading
+                        }
+                        onClick={
+                            onClose
+                        }
+                    >
+                        Cancel
+                    </Button>
+
+                    <Button
+                        type="submit"
+                        variant="primary"
+                        isDark={isDark}
+                        isLoading={
+                            isLoading
+                        }
+                    >
+                        Save Supplier
+                    </Button>
+
+                </div>
+
+            </form>
+
+        </Modal>
+
+    );
 };
 
 export default AddSupplierModal;

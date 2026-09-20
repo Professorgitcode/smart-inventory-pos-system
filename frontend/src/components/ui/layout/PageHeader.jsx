@@ -1,16 +1,16 @@
 import React from "react";
-import theme from "../../../theme/theme";
+import { useTheme } from "../../../context/ThemeContext";
 
 export const PageHeader = ({
   title,
   subtitle,
   actions,
   breadcrumbs,
-  isDark = false,
   style = {},
   ...props
 }) => {
-  const mode = theme.getMode(isDark);
+  // 1. Pull the already-evaluated theme object directly from your context
+  const { theme: mode } = useTheme();
 
   const containerStyles = {
     display: "flex",
@@ -44,7 +44,7 @@ export const PageHeader = ({
             </p>
           )}
         </div>
-        
+
         {actions && (
           <div style={{ display: "flex", alignItems: "center", gap: mode.spacing.sm, flexShrink: 0 }}>
             {actions}
@@ -54,3 +54,5 @@ export const PageHeader = ({
     </div>
   );
 };
+
+export default PageHeader;

@@ -1,10 +1,12 @@
-using backend.Services;
+using backend.Services.Reports;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ReportsController : ControllerBase
     {
         private readonly IReportService _reportService;
@@ -14,26 +16,17 @@ namespace backend.Controllers
             _reportService = reportService;
         }
 
-        //-----------------------------------
-        // GET SALES REPORT DATA
-        //-----------------------------------
         [HttpGet]
         public async Task<IActionResult> GetSalesReport(
             DateTime? startDate,
-            DateTime? endDate
-        )
+            DateTime? endDate)
         {
-            var report = await _reportService.GetSalesReport(
-                startDate,
-                endDate
-            );
+            var report = await _reportService
+                .GetSalesReport(startDate, endDate);
 
             return Ok(report);
         }
 
-        //-----------------------------------
-        // EXPORT PDF
-        //-----------------------------------
         [HttpGet("export/pdf")]
         public async Task<IActionResult> ExportPdf()
         {
@@ -42,13 +35,9 @@ namespace backend.Controllers
             return File(
                 file,
                 "application/pdf",
-                "sales-report.pdf"
-            );
+                "sales-report.pdf");
         }
 
-        //-----------------------------------
-        // EXPORT EXCEL
-        //-----------------------------------
         [HttpGet("export/excel")]
         public async Task<IActionResult> ExportExcel()
         {
@@ -57,13 +46,9 @@ namespace backend.Controllers
             return File(
                 file,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "sales-report.xlsx"
-            );
+                "sales-report.xlsx");
         }
 
-        //-----------------------------------
-        // EXPORT CSV
-        //-----------------------------------
         [HttpGet("export/csv")]
         public async Task<IActionResult> ExportCsv()
         {
@@ -72,8 +57,18 @@ namespace backend.Controllers
             return File(
                 file,
                 "text/csv",
-                "sales-report.csv"
-            );
+                "sales-report.csv");
+        }
+
+        [HttpGet("export/docx")]
+        public async Task<IActionResult> ExportDocx()
+        {
+            var file = await _reportService.ExportSalesToDocx();
+
+            return File(
+                file,
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "sales-report.docx");
         }
     }
 }

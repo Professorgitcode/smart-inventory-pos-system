@@ -1,204 +1,419 @@
-import React from "react";
+// ====================================
+// SUPPLIER TABLE
+// ====================================
+
+import React, {
+    useMemo
+} from "react";
 
 import {
-  Search,
-  Eye,
-  Edit,
-  Trash2
+    Trash2
 } from "lucide-react";
 
-const glassStyle = {
-  background: "rgba(255,255,255,0.65)",
-  backdropFilter: "blur(20px)",
-  border: "1px solid rgba(255,255,255,0.2)",
-  borderRadius: "20px",
-  boxShadow:
-    "0 8px 32px rgba(52,114,156,0.15)"
-};
+import {
+    Card,
+    Table,
+    SearchBox,
+    Badge,
+    Button,
+    SkeletonLoader,
+    Alert
+} from "../ui";
+
+import {
+    RoleGuard
+} from "../../auth";
+
+import {
+    useTheme
+} from "../../context/ThemeContext";
+
+// ====================================
+// COMPONENT
+// ====================================
 
 const SupplierTable = ({
-  suppliers,
-  search,
-  setSearch,
-  onDelete
+    suppliers = [],
+    search,
+    setSearch,
+    onDelete,
+    loading = false,
+    error = null,
+    isDeleting = false,
+    pagination
 }) => {
-  return (
-    <div
-      style={{
-        ...glassStyle,
-        padding: "24px",
-        marginBottom: "32px"
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: "20px"
-        }}
-      >
-        <h3>
-          Enterprise Supplier Dashboard
-        </h3>
-        <div style={{ position: "relative" }}>
-          <Search size={18} style={{ position: "absolute", left: "12px", top: "10px" }} />
-        <input
-          type="text"
-          value={search}
-          placeholder="Search suppliers..."
-          onChange={(e) =>
-            setSearch(e.target.value)
-          }
-          style={{
-            padding: "10px 10px 10px 40px",
-            borderRadius: "8px",
-            border: "1px solid #d1d5db",
-            width: "300px",
-            outline: "none"
-          }}
-        />
-        </div>
-      </div>
 
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse"
-        }}
-      >
-        <thead>
-          <tr
-            style={{
-              textAlign: "left",
-              color: "#6b8798"
-            }}
-          >
-            <th>Supplier</th>
-            <th>Contact</th>
-            <th>Phone</th>
-            <th>Rating</th>
-            <th>Lead Time</th>
-            <th>Score</th>
-            <th>Risk</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+    const {
+        theme,
+        isDark
+    } = useTheme();
 
-        <tbody>
-          {suppliers.map(
-            (supplier) => (
-              <tr
-  key={supplier.supplierId}
-  style={{
-    borderBottom:
-      "1px solid #E5E7EB",
-    transition: "0.2s"
-  }}
->
-                <td
-  style={{
-    padding: "16px",
-    fontWeight: "600"
-  }}
->
-  {supplier.supplierName}
-</td>
+    // ====================================
+    // TABLE DATA
+    // ====================================
+    //
+    // Shared Table expects "id".
+    // Backend supplier records use
+    // "supplierId", so we provide a
+    // UI-level identifier.
+    // ====================================
 
-                <td>
-                  {
-                    supplier.contactPerson
-                  }
-                </td>
+    const tableData =
+        useMemo(
+            () =>
+                suppliers.map(
+                    supplier => ({
+                        ...supplier,
+                        id:
+                            supplier.supplierId
+                    })
+                ),
+            [suppliers]
+        );
 
-                <td>
-                  {supplier.phone}
-                </td>
+    // ====================================
+    // COLUMNS
+    // ====================================
 
-                <td>
-                  {supplier.rating}
-                </td>
+    const columns = useMemo(
+        () => [
+            {
+                key:
+                    "supplierName",
+                label:
+                    "Supplier"
+            },
+            {
+                key:
+                    "contactPerson",
+                label:
+                    "Contact"
+            },
+            {
+                key:
+                    "phone",
+                label:
+                    "Phone"
+            },
+            {
+                key:
+                    "rating",
+                label:
+                    "Rating",
+                render:
+                    value =>
+                        Number(
+                            value || 0
+                        ).toFixed(1)
+            },
+            {
+                key:
+                    "averageLeadTime",
+                label:
+                    "Lead Time",
+                render:
+                    value =>
+                        `${Number(
+                            value || 0
+                        ).toFixed(0)} Days`
+            },
+            {
+                key:
+                    "intelligenceScore",
+                label:
+                    "Score",
+                render:
+                    value =>
+                        Number(
+                            value || 0
+                        ).toFixed(1)
+            },
+            {
+                key:
+                    "riskLevel",
+                label:
+                    "Risk",
+                render:
+                    value => (
+                        <Badge
+                            variant={
+                                value === "High"
+                                    ? "danger"
+                                    : value === "Medium"
+                                        ? "warning"
+                                        : "success"
+                            }
+                            isDark={isDark}
+                        >
+                            {value || "Unknown"}
+                        </Badge>
+                    )
+            },
+            {
+                key:
+                    "status",
+                label:
+                    "Status",
+                render:
+                    value => (
+                        <Badge
+                            variant={
+                                String(
+                                    value
+                                ).toLowerCase() ===
+                                "active"
+                                    ? "success"
+                                    : "warning"
+                            }
+                            isDark={isDark}
+                        >
+                            {value || "Unknown"}
+                        </Badge>
+                    )
+            },
+            {
+                key:
+                    "actions",
+                label:
+                    "Actions",
+                render:
+                    (_, supplier) => (
 
-                <td>
-                  {
-                    supplier.averageLeadTime
-                  }{" "}
-                  Days
-                </td>
+                        <RoleGuard
+                            roles={["Admin"]}
+                        >
+                            <Button
+                                variant="icon"
+                                isDark={isDark}
+                                icon={Trash2}
+                                isLoading={
+                                    isDeleting
+                                }
+                                disabled={
+                                    isDeleting
+                                }
+                                onClick={() =>
+                                    onDelete(
+                                        supplier.supplierId
+                                    )
+                                }
+                                aria-label={
+                                    `Delete ${supplier.supplierName}`
+                                }
+                                style={{
+                                    color:
+                                        theme.colors.danger
+                                }}
+                            />
+                        </RoleGuard>
 
-                <td>
-                  {
-                    supplier.intelligenceScore
-                  }
-                </td>
+                    )
+            }
+        ],
+        [
+            isDark,
+            isDeleting,
+            onDelete,
+            theme.colors.danger
+        ]
+    );
 
-                <td>
-                  {
-                    supplier.riskLevel
-                  }
-                </td>
+    // ====================================
+    // LOADING
+    // ====================================
 
-                <td>
-  <span
-    style={{
-      padding: "6px 12px",
-      borderRadius: "20px",
-      background: "#DCFCE7",
-      color: "#166534",
-      fontSize: "12px",
-      fontWeight: "600"
-    }}
-  >
-    {supplier.status}
-  </span>
-</td>
+    if (loading) {
 
-                <td>
-                 <div
-  style={{
-    display: "flex",
-    gap: "14px",
-    alignItems: "center"
-  }}
->
-                    <Eye
-                      size={18}
-                      style={{
-                        cursor:
-                          "pointer"
-                      }}
-                    />
+        return (
 
-                    <Edit
-                      size={18}
-                      style={{
-                        cursor:
-                          "pointer"
-                      }}
-                    />
+            <Card
+                isDark={isDark}
+            >
 
-                    <Trash2
-                      size={18}
-                      color="red"
-                      style={{
-                        cursor:
-                          "pointer"
-                      }}
-                      onClick={() =>
-                        onDelete(
-                          supplier.supplierId
+                <SearchBox
+                    value={search}
+                    onChange={
+                        event =>
+                            setSearch(
+                                event.target.value
+                            )
+                    }
+                    onClear={() =>
+                        setSearch("")
+                    }
+                    isDark={isDark}
+                    placeholder={
+                        "Search suppliers..."
+                    }
+                />
+
+                <div
+                    style={{
+                        marginTop: "24px",
+                        display: "flex",
+                        flexDirection:
+                            "column",
+                        gap: "12px"
+                    }}
+                >
+
+                    {Array.from(
+                        { length: 6 }
+                    ).map(
+                        (_, index) => (
+
+                            <SkeletonLoader
+                                key={index}
+                                variant="rect"
+                                height="42px"
+                                isDark={isDark}
+                            />
+
                         )
-                      }
+                    )}
+
+                </div>
+
+            </Card>
+
+        );
+
+    }
+
+    // ====================================
+    // ERROR
+    // ====================================
+
+    if (error) {
+
+        return (
+
+            <Alert
+                variant="danger"
+                isDark={isDark}
+                title="Supplier data error"
+            >
+                Unable to load supplier
+                records.
+            </Alert>
+
+        );
+
+    }
+
+    return (
+
+        <Card
+            isDark={isDark}
+        >
+
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent:
+                        "space-between",
+                    alignItems: "center",
+                    gap: "16px",
+                    marginBottom: "20px",
+                    flexWrap: "wrap"
+                }}
+            >
+
+                <div>
+
+                    <h3
+                        style={{
+                            margin: 0,
+                            color:
+                                theme.colors.text
+                        }}
+                    >
+                        Supplier Directory
+                    </h3>
+
+                    <div
+                        style={{
+                            marginTop: "4px",
+                            color:
+                                theme.colors.textMuted,
+                            fontSize:
+                                theme.typography.fontSize.xs
+                        }}
+                    >
+                        {tableData.length}{" "}
+                        suppliers displayed
+                    </div>
+
+                </div>
+
+                <div
+                    style={{
+                        width:
+                            "min(320px, 100%)"
+                    }}
+                >
+
+                    <SearchBox
+                        value={search}
+                        onChange={
+                            event =>
+                                setSearch(
+                                    event.target.value
+                                )
+                        }
+                        onClear={() =>
+                            setSearch("")
+                        }
+                        isDark={isDark}
+                        placeholder={
+                            "Search suppliers..."
+                        }
                     />
-                  </div>
-                </td>
-              </tr>
-            )
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
+
+                </div>
+
+            </div>
+
+            {tableData.length === 0 ? (
+
+                <Alert
+                    variant="info"
+                    isDark={isDark}
+                    title="No suppliers found"
+                >
+                    No supplier records match
+                    the current search.
+                </Alert>
+
+            ) : (
+
+                <Table
+                    columns={columns}
+                    data={tableData}
+                    isDark={isDark}
+                    stickyHeader
+                    pagination={
+                        pagination
+                            ? {
+                                totalItems:
+                                    pagination.totalItems,
+                                itemsPerPage:
+                                    pagination.pageSize,
+                                currentPage:
+                                    pagination.currentPage,
+                                onPageChange:
+                                    pagination.onPageChange
+                            }
+                            : undefined
+                    }
+                />
+
+            )}
+
+        </Card>
+
+    );
+
 };
 
 export default SupplierTable;

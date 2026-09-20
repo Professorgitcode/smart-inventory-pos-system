@@ -1,141 +1,283 @@
+// ====================================
+// SUPPLIER INSIGHTS
+// ====================================
+
 import React from "react";
-import { BrainCircuit } from "lucide-react";
 
-const SupplierInsights = ({ suppliers }) => {
-  const highRiskSuppliers = suppliers.filter(
-    (s) => s.riskLevel === "High"
-  );
+import {
+    Card,
+    Badge,
+    Alert
+} from "../ui";
 
-  const mediumRiskSuppliers = suppliers.filter(
-    (s) => s.riskLevel === "Medium"
-  );
+import {
+    useTheme
+} from "../../context/ThemeContext";
 
-  const bestSupplier =
-    suppliers.length > 0
-      ? suppliers.reduce((best, current) =>
-          current.intelligenceScore >
-          best.intelligenceScore
-            ? current
-            : best
-        )
-      : null;
+// ====================================
+// COMPONENT
+// ====================================
 
-  const averageScore =
-    suppliers.length > 0
-      ? (
-          suppliers.reduce(
-            (sum, s) =>
-              sum + s.intelligenceScore,
-            0
-          ) / suppliers.length
-        ).toFixed(1)
-      : 0;
+const SupplierInsights = ({
+    suppliers = []
+}) => {
 
-  const insightCards = [
-    {
-      title: "Top Performing Supplier",
-      text: bestSupplier
-        ? `${bestSupplier.supplierName} currently has the highest intelligence score of ${bestSupplier.intelligenceScore}.`
-        : "No supplier data available.",
-      confidence: "95%"
-    },
+    const {
+        theme,
+        isDark
+    } = useTheme();
 
-    {
-      title: "Risk Analysis",
-      text:
-        highRiskSuppliers.length > 0
-          ? `${highRiskSuppliers.length} supplier(s) are classified as High Risk and should be monitored closely.`
-          : "No high-risk suppliers detected.",
-      confidence: "90%"
-    },
+    if (!suppliers.length) {
 
-    {
-      title: "Portfolio Health",
-      text: `Average supplier intelligence score is ${averageScore}. Medium-risk suppliers: ${mediumRiskSuppliers.length}.`,
-      confidence: "88%"
-    }
-  ];
+        return (
 
-  return (
-    <div
-      style={{
-        background: "#163042",
-        color: "#ffffff",
-        borderRadius: "24px",
-        padding: "24px",
-        marginBottom: "32px",
-        boxShadow:
-          "0 8px 32px rgba(22,48,66,0.25)"
-      }}
-    >
-      <h3
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          marginBottom: "20px"
-        }}
-      >
-        <BrainCircuit size={22} />
-        AI Supplier Insights
-      </h3>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(250px,1fr))",
-          gap: "20px"
-        }}
-      >
-        {insightCards.map(
-          (card, index) => (
-            <div
-              key={index}
-              style={{
-                padding: "18px",
-                border:
-                  "1px solid rgba(255,255,255,0.1)",
-                borderRadius: "16px",
-                background:
-                  "rgba(255,255,255,0.05)"
-              }}
+            <Alert
+                variant="info"
+                isDark={isDark}
+                title="Supplier portfolio insights"
             >
-              <h4
-                style={{
-                  marginTop: 0,
-                  marginBottom: "12px",
-                  color: "#6EC1D1"
-                }}
-              >
-                {card.title}
-              </h4>
+                No supplier records are
+                currently available.
+            </Alert>
 
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: "14px",
-                  lineHeight: "1.6"
-                }}
-              >
-                {card.text}
-              </p>
+        );
 
-              <div
+    }
+
+    const highRiskSuppliers =
+        suppliers.filter(
+            supplier =>
+                supplier.riskLevel === "High"
+        );
+
+    const mediumRiskSuppliers =
+        suppliers.filter(
+            supplier =>
+                supplier.riskLevel === "Medium"
+        );
+
+    const bestSupplier =
+        suppliers.reduce(
+            (
+                best,
+                current
+            ) =>
+                Number(
+                    current.intelligenceScore || 0
+                ) >
+                Number(
+                    best.intelligenceScore || 0
+                )
+                    ? current
+                    : best
+        );
+
+    const averageScore =
+        (
+            suppliers.reduce(
+                (
+                    total,
+                    supplier
+                ) =>
+                    total +
+                    Number(
+                        supplier.intelligenceScore || 0
+                    ),
+                0
+            ) /
+            suppliers.length
+        ).toFixed(1);
+
+    return (
+
+        <Card
+            variant="glass"
+            isDark={isDark}
+        >
+
+            <div
                 style={{
-                  marginTop: "15px",
-                  fontSize: "12px",
-                  opacity: 0.75
+                    marginBottom: "20px"
                 }}
-              >
-                Confidence: {card.confidence}
-              </div>
+            >
+
+                <h3
+                    style={{
+                        margin: 0,
+                        color:
+                            theme.colors.text
+                    }}
+                >
+                    Supplier Portfolio Insights
+                </h3>
+
+                <p
+                    style={{
+                        margin:
+                            "6px 0 0",
+                        color:
+                            theme.colors.textMuted,
+                        fontSize:
+                            theme.typography.fontSize.sm
+                    }}
+                >
+                    Current observations derived
+                    from supplier performance data.
+                </p>
+
             </div>
-          )
-        )}
-      </div>
-    </div>
-  );
+
+            <div
+                style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                        "repeat(auto-fit, minmax(240px, 1fr))",
+                    gap: "16px"
+                }}
+            >
+
+                {/* ==================================
+                    TOP SUPPLIER
+                    ================================== */}
+
+                <Card
+                    variant="flat"
+                    isDark={isDark}
+                >
+
+                    <div
+                        style={{
+                            fontSize: "12px",
+                            color:
+                                theme.colors.textMuted
+                        }}
+                    >
+                        Top Performing Supplier
+                    </div>
+
+                    <div
+                        style={{
+                            marginTop: "8px",
+                            fontWeight:
+                                theme.typography.fontWeight.bold,
+                            color:
+                                theme.colors.text
+                        }}
+                    >
+                        {
+                            bestSupplier
+                                ?.supplierName ||
+                            "N/A"
+                        }
+                    </div>
+
+                    <Badge
+                        variant="primary"
+                        isDark={isDark}
+                        style={{
+                            marginTop: "12px"
+                        }}
+                    >
+                        Score{" "}
+                        {
+                            bestSupplier
+                                ?.intelligenceScore ?? 0
+                        }
+                    </Badge>
+
+                </Card>
+
+                {/* ==================================
+                    RISK
+                    ================================== */}
+
+                <Card
+                    variant="flat"
+                    isDark={isDark}
+                >
+
+                    <div
+                        style={{
+                            fontSize: "12px",
+                            color:
+                                theme.colors.textMuted
+                        }}
+                    >
+                        Risk Exposure
+                    </div>
+
+                    <div
+                        style={{
+                            marginTop: "10px",
+                            display: "flex",
+                            gap: "8px",
+                            flexWrap: "wrap"
+                        }}
+                    >
+
+                        <Badge
+                            variant={
+                                highRiskSuppliers.length > 0
+                                    ? "danger"
+                                    : "success"
+                            }
+                            isDark={isDark}
+                        >
+                            High Risk{" "}
+                            {highRiskSuppliers.length}
+                        </Badge>
+
+                        <Badge
+                            variant="warning"
+                            isDark={isDark}
+                        >
+                            Medium Risk{" "}
+                            {mediumRiskSuppliers.length}
+                        </Badge>
+
+                    </div>
+
+                </Card>
+
+                {/* ==================================
+                    PORTFOLIO SCORE
+                    ================================== */}
+
+                <Card
+                    variant="flat"
+                    isDark={isDark}
+                >
+
+                    <div
+                        style={{
+                            fontSize: "12px",
+                            color:
+                                theme.colors.textMuted
+                        }}
+                    >
+                        Average Intelligence Score
+                    </div>
+
+                    <div
+                        style={{
+                            marginTop: "8px",
+                            fontSize: "30px",
+                            fontWeight:
+                                theme.typography.fontWeight.extrabold,
+                            color:
+                                theme.colors.text
+                        }}
+                    >
+                        {averageScore}
+                    </div>
+
+                </Card>
+
+            </div>
+
+        </Card>
+
+    );
 };
 
 export default SupplierInsights;

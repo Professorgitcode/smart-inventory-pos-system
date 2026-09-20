@@ -1,76 +1,104 @@
-import React, { useState } from "react";
+// ====================================
+// APPLICATION LAYOUT
+// ====================================
+
+import React from "react";
+import { Outlet } from "react-router-dom";
+
 import Navbar from "../components/layout/navbar/Navbar";
 import Sidebar from "../components/layout/sidebar/Sidebar";
 
-const AppLayout = ({
-    children,
+import {
+  SidebarProvider,
+  useSidebar
+} from "../components/layout/sidebar/SidebarContext";
+
+import { useTheme } from "../context/ThemeContext";
+
+// ====================================
+// LAYOUT CONTENT
+// ====================================
+
+const AppLayoutContent = () => {
+  const {
     theme,
-    toggleTheme,
-    isDark
-}) => {
-    const { colors, spacing, animations } = theme;
-    
-    // Layout State
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    isDark,
+    toggleTheme
+  } = useTheme();
 
-    // Dynamic width calculation for smooth transitions
-    const sidebarWidth = sidebarCollapsed ? "80px" : "260px";
-    const navbarHeight = "72px";
+  const {
+    isCollapsed,
+    toggleCollapse
+  } = useSidebar();
 
-    return (
-        <div
-            style={{
-                display: "flex",
-                minHeight: "100vh",
-                background: colors.background || (isDark ? "#0B1120" : "#F8FAFC"),
-                color: colors.text || (isDark ? "#F8FAFC" : "#0F172A"),
-                fontFamily: theme.typography.fontFamily.primary
-            }}
+  const sidebarWidth =
+    isCollapsed ? "80px" : "260px";
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        backgroundColor:
+          theme.colors.background,
+        color:
+          theme.colors.text,
+        fontFamily:
+          theme.typography.fontFamily.primary
+      }}
+    >
+      <Sidebar theme={theme} />
+
+      <div
+        style={{
+          marginLeft: sidebarWidth,
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          minWidth: 0,
+          transition:
+            "margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
+        }}
+      >
+        <Navbar
+          theme={theme}
+          toggleTheme={toggleTheme}
+          isDark={isDark}
+          collapsed={isCollapsed}
+          toggleSidebar={toggleCollapse}
+          title="Dashboard"
+          breadcrumbs={[
+            "Home",
+            "Dashboard"
+          ]}
+        />
+
+        <main
+          style={{
+            marginTop: "72px",
+            padding:
+              theme.spacing?.xl || "32px",
+            flex: 1,
+            minWidth: 0,
+            overflowX: "hidden"
+          }}
         >
-            <Sidebar
-                theme={theme}
-                collapsed={sidebarCollapsed}
-                toggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-            />
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+};
 
-            <div
-                style={{
-                    flex: 1,
-                    // Dynamically follow the sidebar's width
-                    marginLeft: sidebarWidth,
-                    display: "flex",
-                    flexDirection: "column",
-                    // Apply smooth bezier transition for the enterprise feel
-                    transition: animations?.transition?.base || "margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-                    // Prevents flexbox blowout when rendering wide data tables
-                    minWidth: 0 
-                }}
-            >
-                <Navbar
-                    theme={theme}
-                    toggleTheme={toggleTheme}
-                    isDark={isDark}
-                    collapsed={sidebarCollapsed}
-                    toggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-                    title="Dashboard"
-                    breadcrumbs={["Home", "Dashboard"]}
-                />
+// ====================================
+// LAYOUT ROOT
+// ====================================
 
-                <main
-                    style={{
-                        // Offsets the fixed Navbar perfectly
-                        marginTop: navbarHeight,
-                        // Replaces hardcoded 32px with your spacing token
-                        padding: spacing.xl || "32px",
-                        flex: 1,
-                        overflowX: "hidden"
-                    }}
-                >
-                    {children}
-                </main>
-            </div>
-        </div>
-    );
+const AppLayout = () => {
+  return (
+    <SidebarProvider initialCollapsed={false}>
+      <AppLayoutContent />
+    </SidebarProvider>
+  );
 };
 
 export default AppLayout;

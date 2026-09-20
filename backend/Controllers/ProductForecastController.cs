@@ -1,10 +1,12 @@
 using backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
 {
     [ApiController]
     [Route("api/productforecast")]
+    [Authorize]
     public class ProductForecastController
         : ControllerBase
     {

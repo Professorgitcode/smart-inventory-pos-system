@@ -110,7 +110,7 @@ const CreatePaymentModal = ({
 
   const inputStyle = {
     width: "100%",
-    padding: "12px",
+    padding: "18px",
     borderRadius: "8px",
     border: `1px solid ${theme.colors.border}`,
     backgroundColor: theme.colors.background,

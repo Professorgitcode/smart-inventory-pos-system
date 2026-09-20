@@ -1,4 +1,9 @@
-import { useState, useCallback } from "react";
+import {
+    useState,
+    useCallback,
+    useRef,
+    useEffect
+} from "react";
 
 const DEFAULT_STATE = {
 
@@ -14,145 +19,156 @@ const DEFAULT_STATE = {
 
 const useToast = () => {
 
-    const [toast, setToast] = useState(DEFAULT_STATE);
+    const [
+        toast,
+        setToast
+    ] = useState(DEFAULT_STATE);
 
-    /*
-    =====================================
-    Show Toast
-    =====================================
-    */
+    const timerRef =
+        useRef(null);
+
+    // ====================================
+    // CLEAR TIMER
+    // ====================================
+
+    const clearTimer = useCallback(() => {
+
+        if (timerRef.current) {
+
+            clearTimeout(
+                timerRef.current
+            );
+
+            timerRef.current = null;
+
+        }
+
+    }, []);
+
+    // ====================================
+    // CLEANUP
+    // ====================================
+
+    useEffect(() => {
+
+        return () => {
+            clearTimer();
+        };
+
+    }, [clearTimer]);
+
+    // ====================================
+    // SHOW
+    // ====================================
 
     const show = useCallback(
-
         (
             header,
             message,
             type = "info"
         ) => {
 
+            clearTimer();
+
             setToast({
-
                 isVisible: false,
-
                 header,
-
                 message,
-
                 type
-
             });
 
-            setTimeout(() => {
+            timerRef.current =
+                setTimeout(() => {
 
-                setToast({
+                    setToast({
+                        isVisible: true,
+                        header,
+                        message,
+                        type
+                    });
 
-                    isVisible: true,
+                    timerRef.current = null;
 
-                    header,
-
-                    message,
-
-                    type
-
-                });
-
-            }, 10);
+                }, 10);
 
         },
-
-        []
-
+        [clearTimer]
     );
 
-    /*
-    =====================================
-    Toast Helpers
-    =====================================
-    */
+    // ====================================
+    // HELPERS
+    // ====================================
 
     const success = useCallback(
-
-        (header, message) => {
-
-            show(header, message, "success");
-
-        },
-
+        (header, message) =>
+            show(
+                header,
+                message,
+                "success"
+            ),
         [show]
-
     );
 
     const error = useCallback(
-
-        (header, message) => {
-
-            show(header, message, "error");
-
-        },
-
+        (header, message) =>
+            show(
+                header,
+                message,
+                "error"
+            ),
         [show]
-
     );
 
     const warning = useCallback(
-
-        (header, message) => {
-
-            show(header, message, "warning");
-
-        },
-
+        (header, message) =>
+            show(
+                header,
+                message,
+                "warning"
+            ),
         [show]
-
     );
 
     const info = useCallback(
-
-        (header, message) => {
-
-            show(header, message, "info");
-
-        },
-
+        (header, message) =>
+            show(
+                header,
+                message,
+                "info"
+            ),
         [show]
-
     );
 
-    /*
-    =====================================
-    Hide Toast
-    =====================================
-    */
+    // ====================================
+    // HIDE
+    // ====================================
 
     const hide = useCallback(() => {
 
-        setToast((previous) => ({
+        clearTimer();
 
-            ...previous,
+        setToast(
+            previous => ({
+                ...previous,
+                isVisible: false
+            })
+        );
 
-            isVisible: false
+    }, [clearTimer]);
 
-        }));
-
-    }, []);
-
-    /*
-    =====================================
-    Reset
-    =====================================
-    */
+    // ====================================
+    // RESET
+    // ====================================
 
     const reset = useCallback(() => {
 
-        setToast(DEFAULT_STATE);
+        clearTimer();
 
-    }, []);
+        setToast(
+            DEFAULT_STATE
+        );
 
-    /*
-    =====================================
-    Public API
-    =====================================
-    */
+    }, [clearTimer]);
 
     return {
 
@@ -173,7 +189,6 @@ const useToast = () => {
         reset
 
     };
-
 };
 
 export default useToast;

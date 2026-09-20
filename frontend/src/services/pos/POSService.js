@@ -3,29 +3,21 @@ import ENDPOINTS from "../../api/endpoints";
 
 class POSService {
 
+    // ====================================
+    // CREATE SALE / ORDER
+    // ====================================
     async createSale(data) {
 
         const response =
             await apiClient.post(
-                ENDPOINTS.POS.ROOT,
+                ENDPOINTS.ORDERS.ROOT,
                 data
             );
 
         return response.data;
-
     }
-
-    async getSales() {
-
-        const response =
-            await apiClient.get(
-                ENDPOINTS.POS.SALES
-            );
-
-        return response.data;
-
-    }
-
 }
 
-export default new POSService();
+const posService = new POSService();
+
+export default posService;

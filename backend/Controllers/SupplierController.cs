@@ -3,6 +3,7 @@ using backend.Data;
 using backend.Models;
 using backend.Services;
 using backend.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ namespace backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class SupplierController : ControllerBase
     {
         private readonly SupplierService _service;
@@ -69,7 +71,7 @@ namespace backend.Controllers
                 })
                 .ToListAsync();
 
-          return Ok(
+            return Ok(
     new ApiResponse<List<SupplierDto>>
     (
         true,
@@ -83,13 +85,13 @@ namespace backend.Controllers
         // CREATE SUPPLIER
         // =============================
         [HttpPost]
-        public async Task<IActionResult> Create(
-            CreateSupplierDto dto)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Create(CreateSupplierDto dto)
         {
             var supplier =
                 await _service.CreateSupplier(dto);
 
-       return Ok(
+        return Ok(
 
 new ApiResponse<Supplier>
 (
@@ -106,8 +108,8 @@ new ApiResponse<Supplier>
         // =============================
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(
-           int id)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int id)
         {
             var supplier =
                await _context.Suppliers.FindAsync(id);
@@ -117,9 +119,9 @@ new ApiResponse<Supplier>
 
             _context.Suppliers.Remove(supplier);
 
-               await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
-           return Ok(
+            return Ok(
 
 new ApiResponse<object>
 (
@@ -130,10 +132,10 @@ new ApiResponse<object>
 
 );
         }
+
 [HttpPut("{id}")]
-public async Task<IActionResult> Update(
-    int id,
-    CreateSupplierDto dto)
+[Authorize(Roles = "Admin")]
+public async Task<IActionResult> Update(int id, CreateSupplierDto dto)
 {
     var supplier =
         await _context.Suppliers.FindAsync(id);

@@ -1,15 +1,18 @@
 import React from "react";
+import { useTheme } from "../../../context/ThemeContext";
 
-const PageContainer = ({ theme, children }) => {
+const PageContainer = ({ children, style }) => {
+  const { theme } = useTheme();
+
   return (
     <div
       style={{
-        width: "100%",
+        backgroundColor: theme.colors.background,
+        minHeight: "100%",
         display: "flex",
         flexDirection: "column",
         gap: "24px",
-        padding: "8px 0",
-        color: theme.colors.text,
+        ...style
       }}
     >
       {children}

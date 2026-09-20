@@ -1,27 +1,89 @@
-import apiClient from "../../api/apiClient";
-import ENDPOINTS from "../../api/endpoints";
+// ====================================
+// SUPPLIER SERVICE
+// ====================================
+//
+// HTTP/API communication for suppliers.
+//
+// This layer knows:
+// - apiClient
+// - endpoint definitions
+// - HTTP operations
+// - backend ApiResponse<T>
+//
+// It does not know about React or UI.
+// ====================================
+
+import apiClient
+    from "../../api/apiClient";
+
+import ENDPOINTS
+    from "../../api/endpoints";
+
+// ====================================
+// SERVICE
+// ====================================
 
 class SupplierService {
 
-    async getSuppliers() {
-    const response =
-        await apiClient.get(
-            ENDPOINTS.SUPPLIERS.ROOT
-        );
+    // ====================================
+    // RESPONSE HANDLER
+    // ====================================
 
-    return response.data.data;
-}
+    unwrapResponse(response) {
+
+        const payload = response.data;
+
+        if (payload?.success === false) {
+
+            throw new Error(
+                payload.message ||
+                "Supplier operation failed."
+            );
+
+        }
+
+        return payload?.data;
+    }
+
+    // ====================================
+    // GET SUPPLIERS
+    // ====================================
+
+    async getSuppliers() {
+
+        const response =
+            await apiClient.get(
+                ENDPOINTS.SUPPLIERS.ROOT
+            );
+
+        return this.unwrapResponse(
+            response
+        );
+    }
+
+    // ====================================
+    // GET ANALYTICS
+    // ====================================
 
     async getAnalytics() {
-    const response =
-        await apiClient.get(
-            ENDPOINTS.SUPPLIERS.ANALYTICS
+
+        const response =
+            await apiClient.get(
+                ENDPOINTS.SUPPLIERS.ANALYTICS
+            );
+
+        return this.unwrapResponse(
+            response
         );
+    }
 
-    return response.data.data;
-}
+    // ====================================
+    // CREATE
+    // ====================================
 
-    async createSupplier(supplier) {
+    async createSupplier(
+        supplier
+    ) {
 
         const response =
             await apiClient.post(
@@ -29,10 +91,19 @@ class SupplierService {
                 supplier
             );
 
-        return response.data.data;
+        return this.unwrapResponse(
+            response
+        );
     }
 
-    async updateSupplier(id, supplier) {
+    // ====================================
+    // UPDATE
+    // ====================================
+
+    async updateSupplier(
+        id,
+        supplier
+    ) {
 
         const response =
             await apiClient.put(
@@ -40,16 +111,36 @@ class SupplierService {
                 supplier
             );
 
-        return response.data.data;
+        return this.unwrapResponse(
+            response
+        );
     }
+
+    // ====================================
+    // DELETE
+    // ====================================
 
     async deleteSupplier(id) {
 
-        await apiClient.delete(
-            `${ENDPOINTS.SUPPLIERS.ROOT}/${id}`
+        const response =
+            await apiClient.delete(
+                `${ENDPOINTS.SUPPLIERS.ROOT}/${id}`
+            );
+
+        this.unwrapResponse(
+            response
         );
+
+        return true;
     }
 
 }
 
-export default new SupplierService();
+// ====================================
+// SERVICE INSTANCE
+// ====================================
+
+const supplierService =
+    new SupplierService();
+
+export default supplierService;

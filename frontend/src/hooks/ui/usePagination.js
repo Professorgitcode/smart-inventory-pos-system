@@ -1,114 +1,177 @@
-import { useState, useMemo, useCallback } from "react";
+import {
+    useState,
+    useMemo,
+    useCallback,
+    useEffect
+} from "react";
 
 const usePagination = (
     items = [],
     initialPageSize = 10
 ) => {
 
-    const [currentPage, setCurrentPage] = useState(1);
+    const [
+        currentPage,
+        setCurrentPage
+    ] = useState(1);
 
-    const [pageSize, setPageSize] =
-        useState(initialPageSize);
-
-    /*
-    =====================================
-    Calculated Values
-    =====================================
-    */
-
-    const totalItems = items.length;
-
-    const totalPages = Math.max(
-        1,
-        Math.ceil(totalItems / pageSize)
+    const [
+        pageSize,
+        setPageSize
+    ] = useState(
+        initialPageSize
     );
 
-    /*
-    =====================================
-    Paginated Data
-    =====================================
-    */
+    // ====================================
+    // CALCULATED VALUES
+    // ====================================
 
-    const paginatedItems = useMemo(() => {
+    const totalItems =
+        items.length;
 
-        const start =
-            (currentPage - 1) * pageSize;
-
-        const end =
-            start + pageSize;
-
-        return items.slice(start, end);
-
-    }, [items, currentPage, pageSize]);
-
-    /*
-    =====================================
-    Navigation
-    =====================================
-    */
-
-    const nextPage = useCallback(() => {
-
-        setCurrentPage((page) =>
-            Math.min(page + 1, totalPages)
-        );
-
-    }, [totalPages]);
-
-    const previousPage = useCallback(() => {
-
-        setCurrentPage((page) =>
-            Math.max(page - 1, 1)
-        );
-
-    }, []);
-
-    const goToPage = useCallback((page) => {
-
-        const target = Math.max(
+    const totalPages =
+        Math.max(
             1,
-            Math.min(page, totalPages)
+            Math.ceil(
+                totalItems / pageSize
+            )
         );
 
-        setCurrentPage(target);
+    // ====================================
+    // KEEP PAGE VALID
+    // ====================================
 
-    }, [totalPages]);
+    useEffect(() => {
 
-    /*
-    =====================================
-    Page Size
-    =====================================
-    */
+        setCurrentPage(
+            page =>
+                Math.min(
+                    page,
+                    totalPages
+                )
+        );
 
-    const changePageSize = useCallback((size) => {
+    }, [
+        totalPages,
+        items.length
+    ]);
 
-        setPageSize(size);
+    // ====================================
+    // PAGINATED DATA
+    // ====================================
 
-        setCurrentPage(1);
+    const paginatedItems =
+        useMemo(() => {
 
-    }, []);
+            const start =
+                (currentPage - 1) *
+                pageSize;
 
-    /*
-    =====================================
-    Reset
-    =====================================
-    */
+            const end =
+                start + pageSize;
 
-    const reset = useCallback(() => {
+            return items.slice(
+                start,
+                end
+            );
 
-        setCurrentPage(1);
+        }, [
+            items,
+            currentPage,
+            pageSize
+        ]);
 
-    }, []);
+    // ====================================
+    // NAVIGATION
+    // ====================================
 
-    /*
-    =====================================
-    Public API
-    =====================================
-    */
+    const nextPage =
+        useCallback(() => {
+
+            setCurrentPage(
+                page =>
+                    Math.min(
+                        page + 1,
+                        totalPages
+                    )
+            );
+
+        }, [totalPages]);
+
+    const previousPage =
+        useCallback(() => {
+
+            setCurrentPage(
+                page =>
+                    Math.max(
+                        page - 1,
+                        1
+                    )
+            );
+
+        }, []);
+
+    const goToPage =
+        useCallback(
+            page => {
+
+                const target =
+                    Math.max(
+                        1,
+                        Math.min(
+                            page,
+                            totalPages
+                        )
+                    );
+
+                setCurrentPage(
+                    target
+                );
+
+            },
+            [totalPages]
+        );
+
+    // ====================================
+    // PAGE SIZE
+    // ====================================
+
+    const changePageSize =
+        useCallback(size => {
+
+            const nextSize =
+                Math.max(
+                    1,
+                    Number(size) || 10
+                );
+
+            setPageSize(
+                nextSize
+            );
+
+            setCurrentPage(1);
+
+        }, []);
+
+    // ====================================
+    // RESET
+    // ====================================
+
+    const reset =
+        useCallback(() => {
+
+            setCurrentPage(1);
+
+        }, []);
+
+    // ====================================
+    // PUBLIC API
+    // ====================================
 
     return {
 
-        data: paginatedItems,
+        data:
+            paginatedItems,
 
         pagination: {
 
