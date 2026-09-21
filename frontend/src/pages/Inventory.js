@@ -1,279 +1,402 @@
-import React, { useEffect, useState } from "react";
+import React, {
+    useMemo,
+    useState
+} from "react";
+
 import {
-  Search,
-  Plus,
-  Edit3,
-  Trash2
-} from "lucide-react";
+    useTheme
+} from "../context/ThemeContext";
 
-import apiClient from "../api/apiClient";
+import useInventory
+    from "../hooks/business/inventory/useInventory";
 
-import { RoleGuard } from "../auth";
-import { useTheme } from "../context/ThemeContext";
-import ProductModal from "../components/ProductModal";
-import Toast from "../components/common/Toast";
+import useModal
+    from "../hooks/ui/useModal";
 
-const Inventory = ({ theme }) => {
-  const API = "http://localhost:5216/api/products";
+import useToast
+    from "../hooks/ui/useToast";
 
-  const [products, setProducts] = useState([]);
-  const [search, setSearch] = useState("");
+import usePagination
+    from "../hooks/ui/usePagination";
 
-  // MODAL STATE
-  const [modal, setModal] = useState({
-    isOpen: false,
-    mode: "add",
-    data: null
-  });
+import InventoryHeader
+    from "../components/inventory/InventoryHeader";
 
-  // TOAST STATE
-  const [toast, setToast] = useState({
-  isVisible: false,
-  header: "",
-  message: "",
-  type: "info"
-});
+import InventoryTable
+    from "../components/inventory/InventoryTable";
 
-  const triggerToast = (
-  header,
-  message,
-  type = "info"
-) => {
-  setToast({
-    isVisible: false,
-    header,
-    message,
-    type
-  });
+import ProductModal
+    from "../components/inventory/ProductModal";
 
-  setTimeout(() => {
-    setToast({
-      isVisible: true,
-      header,
-      message,
-      type
-    });
-  }, 10);
-};
-  // ================= FETCH =================
-  const fetchProducts = async () => {
-    try {
-      const res = await fetch(API);
-      const data = await res.json();
-      setProducts(data);
-    } catch {
-     triggerToast(
-  "Server Error",
-  "Unable to fetch inventory records.",
-  "error"
-);
-    }
-  };
+import Toast
+    from "../components/common/Toast";
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+// ====================================
+// INVENTORY PAGE
+// ====================================
+// Composition layer only.
+//
+// Responsibilities:
+// - Connect business hook
+// - Connect UI hooks
+// - Manage search/filter state
+// - Handle CRUD events
+// - Compose feature components
+//
+// API communication does not belong here.
+// ====================================
 
-  // ================= ADD / UPDATE =================
-  const handleModalSubmit = async (formData) => {
-    try {
-      if (modal.mode === "add") {
-        await fetch(API, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: formData.name,
-            price: parseFloat(formData.price),
-            stockQuantity: parseInt(formData.stockQuantity)
-          })
-        });
+const Inventory = () => {
 
-       triggerToast(
-  "Product Added",
-  "New product added successfully.",
-  "success"
-);
-      } else {
-        await fetch(`${API}/${modal.data.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: modal.data.id,
-            name: formData.name,
-            price: parseFloat(formData.price),
-            stockQuantity: parseInt(formData.stockQuantity)
-          })
-        });
+    const {
+        theme
+    } = useTheme();
 
-        triggerToast(
-  "Product Updated",
-  "Product details updated successfully.",
-  "info"
-);
-      }
+    // ====================================
+    // BUSINESS STATE
+    // ====================================
 
-      setModal({ isOpen: false, mode: "add", data: null });
-      fetchProducts();
+    const {
+        data: products,
+        loading,
+        error,
+        actions
+    } = useInventory();
 
-    } catch {
-     triggerToast(
-  "Validation Error",
-  "Product name cannot be empty.",
-  "error"
-);
+    // ====================================
+    // UI HOOKS
+    // ====================================
 
-    }
-  };
+    const productModal =
+        useModal();
 
-  // ================= DELETE =================
-  const handleDelete = async (id) => {
-      const confirmDelete =
-        window.confirm(
-          "Confirm your action to Delete this Product?"
+    const toast =
+        useToast();
+
+    // ====================================
+    // SEARCH STATE
+    // ====================================
+
+    const [
+        search,
+        setSearch
+    ] = useState("");
+
+    // ====================================
+    // FILTER
+    // ====================================
+
+    const filteredProducts =
+        useMemo(() => {
+
+            const term =
+                search
+                    .trim()
+                    .toLowerCase();
+
+            if (!term) {
+                return products;
+            }
+
+            return products.filter(
+                product =>
+                    product?.name
+                        ?.toLowerCase()
+                        .includes(term)
+            );
+
+        }, [
+            products,
+            search
+        ]);
+
+    // ====================================
+    // PAGINATION
+    // ====================================
+
+    const pagination =
+        usePagination(
+            filteredProducts,
+            10
         );
 
-      if (!confirmDelete) return;
-    try {
-      await fetch(`${API}/${id}`, {
-        method: "DELETE"
-      });
+    // ====================================
+    // ADD PRODUCT
+    // ====================================
 
-     triggerToast(
-  "Product Deleted",
-  "Product removed from inventory.",
-  "info"
-);
-      fetchProducts();
+    const handleAddProduct = () => {
 
-    } catch {
-      triggerToast(
-  "Server Error",
-  "Unable to delete product from inventory records.",
-  "error"
-);
-    }
-  };
+        productModal.open({
+            mode: "add",
+            data: null
+        });
 
-  // ================= FILTER =================
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase())
-  );
+    };
 
-  return (
-    <div style={{
-      backgroundColor: theme.colors.surface,
-      padding: "24px",
-      borderRadius: "16px",
-      border: `1px solid ${theme.colors.border}`
-    }}>
+    // ====================================
+    // EDIT PRODUCT
+    // ====================================
 
-      {/* TOAST */}
-      <Toast
-  header={toast.header}
-  message={toast.message}
-  type={toast.type}
-  isVisible={toast.isVisible}
-  theme={theme}
-  onClose={() =>
-    setToast(prev => ({
-      ...prev,
-      isVisible: false
-    }))
-  }
-/>
+    const handleEditProduct = (
+        product
+    ) => {
 
-      {/* HEADER */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "24px" }}>
-        
-        {/* SEARCH */}
-        <div style={{ position: "relative" }}>
-          <Search size={18} style={{ position: "absolute", left: "12px", top: "10px", color: theme.colors.textMuted }} />
-          <input
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{
-              padding: "10px 10px 10px 40px",
-              borderRadius: "8px",
-              border: `1px solid ${theme.colors.border}`,
-              backgroundColor: theme.colors.background,
-              color: theme.colors.text,
-              width: "300px",
-              outline: "none"
-            }}
-          />
+        productModal.open({
+            mode: "edit",
+            data: product
+        });
+
+    };
+
+    // ====================================
+    // SAVE PRODUCT
+    // ====================================
+
+    const handleSaveProduct = async (
+        productData
+    ) => {
+
+        try {
+
+            if (
+                productModal.data?.mode ===
+                "edit"
+            ) {
+
+                const product =
+                    productModal.data?.data;
+
+                await actions.updateProduct({
+
+                    id: product.id,
+
+                    product: {
+
+                        id: product.id,
+
+                        ...productData
+
+                    }
+
+                });
+
+                toast.success(
+                    "Product Updated",
+                    "Product details updated successfully."
+                );
+
+            } else {
+
+                await actions.createProduct(
+                    productData
+                );
+
+                toast.success(
+                    "Product Added",
+                    "New product added successfully."
+                );
+
+            }
+
+            productModal.reset();
+
+        } catch (operationError) {
+
+            toast.error(
+                "Operation Failed",
+                operationError?.message ||
+                    "Unable to save the product."
+            );
+
+        }
+
+    };
+
+    // ====================================
+    // DELETE PRODUCT
+    // ====================================
+
+    const handleDeleteProduct = async (
+        id
+    ) => {
+
+        const confirmed =
+            window.confirm(
+                "Delete this product from inventory?"
+            );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+
+            await actions.deleteProduct(
+                id
+            );
+
+            toast.success(
+                "Product Deleted",
+                "Product removed from inventory."
+            );
+
+        } catch (operationError) {
+
+            toast.error(
+                "Delete Failed",
+                operationError?.message ||
+                    "Unable to delete the product."
+            );
+
+        }
+
+    };
+
+    // ====================================
+    // RENDER
+    // ====================================
+
+    return (
+
+        <div>
+
+            {/* ====================================
+                HEADER
+                ==================================== */}
+
+            <InventoryHeader
+                productCount={
+                    products.length
+                }
+                onAddProduct={
+                    handleAddProduct
+                }
+            />
+
+            {/* ====================================
+                INVENTORY TABLE
+                ==================================== */}
+
+            <InventoryTable
+                products={
+                    pagination.data
+                }
+                totalProducts={
+                    filteredProducts.length
+                }
+                catalogueSize={
+                    products.length
+                }
+                search={
+                    search
+                }
+                setSearch={
+                    setSearch
+                }
+                onEdit={
+                    handleEditProduct
+                }
+                onDelete={
+                    handleDeleteProduct
+                }
+                onAddProduct={
+                    handleAddProduct
+                }
+                loading={
+                    loading
+                }
+                error={
+                    error
+                }
+                pagination={{
+                    totalItems:
+                        pagination.pagination
+                            .totalItems,
+
+                    pageSize:
+                        pagination.pagination
+                            .pageSize,
+
+                    currentPage:
+                        pagination.pagination
+                            .currentPage,
+
+                    onPageChange:
+                        pagination.actions
+                            .goToPage
+                }}
+            />
+
+            {/* ====================================
+                PRODUCT MODAL
+                ==================================== */}
+
+            <ProductModal
+
+                isOpen={
+                    productModal.isOpen
+                }
+
+                mode={
+                    productModal.data?.mode ||
+                    "add"
+                }
+
+                initialData={
+                    productModal.data?.data ||
+                    null
+                }
+
+                onClose={
+                    productModal.reset
+                }
+
+                onSave={
+                    handleSaveProduct
+                }
+
+                isSaving={
+                    loading
+                }
+
+            />
+
+            {/* ====================================
+                TOAST
+                ==================================== */}
+
+            <Toast
+
+                header={
+                    toast.toast.header
+                }
+
+                message={
+                    toast.toast.message
+                }
+
+                type={
+                    toast.toast.type
+                }
+
+                isVisible={
+                    toast.toast.isVisible
+                }
+
+                theme={
+                    theme
+                }
+
+                onClose={
+                    toast.hide
+                }
+
+            />
+
         </div>
 
-        {/* ADD BUTTON (ONLY OPENS MODAL) */}
-        <button
-          onClick={() => setModal({ isOpen: true, mode: "add", data: null })}
-          style={{
-            backgroundColor: theme.colors.primary,
-            color: "white",
-            border: "none",
-            padding: "10px 20px",
-            borderRadius: "8px",
-            fontWeight: "600",
-            cursor: "pointer",
-            display: "flex",
-            gap: "8px"
-          }}>
-          <Plus size={18} /> Add Product
-        </button>
-      </div>
+    );
 
-      {/* TABLE */}
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ textAlign: "left", borderBottom: `1px solid ${theme.colors.border}`, color: theme.colors.textMuted }}>
-            <th style={{ padding: "16px" }}>Product Name</th>
-            <th style={{ padding: "16px" }}>Price</th>
-            <th style={{ padding: "16px" }}>Stock</th>
-            <th style={{ padding: "16px" }}>Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {filteredProducts.map(p => (
-            <tr key={p.id} style={{ borderBottom: `1px solid ${theme.colors.border}` }}>
-              
-              <td style={{ padding: "16px" }}>{p.name}</td>
-              <td style={{ padding: "16px" }}>${p.price}</td>
-              <td style={{ padding: "16px" }}>{p.stockQuantity} Units</td>
-
-              <td style={{ padding: "16px", display: "flex", gap: "12px" }}>
-                
-                <Edit3
-                  size={18}
-                  color={theme.colors.textMuted}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => setModal({ isOpen: true, mode: "edit", data: p })}
-                />
-
-                <Trash2
-                  size={18}
-                  color={theme.colors.danger}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => handleDelete(p.id)}
-                />
-
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* MODAL */}
-      <ProductModal
-        isOpen={modal.isOpen}
-        mode={modal.mode}
-        initialData={modal.data}
-        theme={theme}
-        onClose={() => setModal({ ...modal, isOpen: false })}
-        onSubmit={handleModalSubmit}
-      />
-    </div>
-  );
 };
 
 export default Inventory;
