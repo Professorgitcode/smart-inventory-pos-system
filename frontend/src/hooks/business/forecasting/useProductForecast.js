@@ -1,39 +1,30 @@
 // ====================================
-// FORECASTING BUSINESS HOOK
-// ====================================
-//
-// Current backend responsibility:
-//
-// GET /api/forecast
-//
-// Accuracy and model metadata are not
-// currently exposed by the backend, so
-// they are not represented here.
+// PRODUCT FORECAST BUSINESS HOOK
 // ====================================
 
 import {
     useQuery
 } from "../../../query";
 
-import ForecastRepository
-    from "../../../repositories/forecasting/ForecastRepository";
+import ProductForecastRepository
+    from "../../../repositories/forecasting/ProductForecastRepository";
 
-const FORECAST_KEY = [
+const PRODUCT_FORECAST_KEY = [
     "forecasting",
-    "forecast"
+    "products"
 ];
 
-const useForecasting = () => {
+const useProductForecast = () => {
 
     // ====================================
-    // FORECAST QUERY
+    // PRODUCT FORECAST QUERY
     // ====================================
 
     const forecastQuery =
         useQuery(
-            FORECAST_KEY,
+            PRODUCT_FORECAST_KEY,
             () =>
-                ForecastRepository.getForecast(),
+                ProductForecastRepository.getProductForecast(),
             {
                 staleTime:
                     10 * 60 * 1000
@@ -45,7 +36,7 @@ const useForecasting = () => {
     // ====================================
 
     const refresh =
-        forecastQuery.refetch;
+                forecastQuery.refetch;
 
     // ====================================
     // RETURN
@@ -54,10 +45,7 @@ const useForecasting = () => {
     return {
 
         data:
-            forecastQuery.data,
-
-        forecast:
-            forecastQuery.data,
+            forecastQuery.data || [],
 
         loading:
             forecastQuery.loading,
@@ -74,4 +62,4 @@ const useForecasting = () => {
     };
 };
 
-export default useForecasting;
+export default useProductForecast;
