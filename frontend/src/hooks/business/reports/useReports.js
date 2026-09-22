@@ -3,19 +3,28 @@
 // ====================================
 //
 // Server state:
-//
-// - Report data
+// - Sales report data
 //
 // Imperative operations:
-//
 // - PDF export
 // - CSV export
 // - Excel export
 // - DOCX export
+//
+// Architecture:
+//
+// useReports
+//   ↓
+// ReportsRepository
+//   ↓
+// ReportsService
+//   ↓
+// apiClient
 // ====================================
 
 import {
-    useCallback
+    useCallback,
+    useMemo
 } from "react";
 
 import {
@@ -25,13 +34,47 @@ import {
 import ReportsRepository
     from "../../../repositories/reports/ReportsRepository";
 
-const REPORTS_KEY = [
-    "reports"
-];
+// ====================================
+// COMPONENT
+// ====================================
 
 const useReports = (
     parameters = {}
 ) => {
+
+    // ====================================
+    // NORMALIZE PARAMETERS
+    // ====================================
+
+    const normalizedParameters =
+        useMemo(
+            () => ({
+                startDate:
+                    parameters.startDate || "",
+                endDate:
+                    parameters.endDate || ""
+            }),
+            [
+                parameters.startDate,
+                parameters.endDate
+            ]
+        );
+
+    // ====================================
+    // QUERY KEY
+    // ====================================
+
+    const reportKey = useMemo(
+        () => [
+            "reports",
+            normalizedParameters.startDate,
+            normalizedParameters.endDate
+        ],
+        [
+            normalizedParameters.startDate,
+            normalizedParameters.endDate
+        ]
+    );
 
     // ====================================
     // REPORT QUERY
@@ -39,10 +82,10 @@ const useReports = (
 
     const reportQuery =
         useQuery(
-            REPORTS_KEY,
+            reportKey,
             () =>
                 ReportsRepository.getReport(
-                    parameters
+                    normalizedParameters
                 ),
             {
                 staleTime:
@@ -56,12 +99,12 @@ const useReports = (
 
     const exportPDF =
         useCallback(
-            (params = parameters) =>
+            (params = normalizedParameters) =>
                 ReportsRepository.exportPDF(
                     params
                 ),
             [
-                parameters
+                normalizedParameters
             ]
         );
 
@@ -71,12 +114,12 @@ const useReports = (
 
     const exportCSV =
         useCallback(
-            (params = parameters) =>
+            (params = normalizedParameters) =>
                 ReportsRepository.exportCSV(
                     params
                 ),
             [
-                parameters
+                normalizedParameters
             ]
         );
 
@@ -86,12 +129,12 @@ const useReports = (
 
     const exportExcel =
         useCallback(
-            (params = parameters) =>
+            (params = normalizedParameters) =>
                 ReportsRepository.exportExcel(
                     params
                 ),
             [
-                parameters
+                normalizedParameters
             ]
         );
 
@@ -101,12 +144,12 @@ const useReports = (
 
     const exportDocx =
         useCallback(
-            (params = parameters) =>
+            (params = normalizedParameters) =>
                 ReportsRepository.exportDocx(
                     params
                 ),
             [
-                parameters
+                normalizedParameters
             ]
         );
 
@@ -115,13 +158,7 @@ const useReports = (
     // ====================================
 
     const refresh =
-        useCallback(
-            () =>
-                reportQuery.refetch(),
-            [
-                reportQuery.refetch
-            ]
-        );
+        reportQuery.refetch;
 
     // ====================================
     // RETURN
@@ -153,6 +190,7 @@ const useReports = (
         }
 
     };
+
 };
 
 export default useReports;
