@@ -20,10 +20,6 @@
 // ====================================
 
 import {
-    useCallback
-} from "react";
-
-import {
     useQuery
 } from "../../../query";
 
@@ -144,26 +140,17 @@ const useInventoryInsights = () => {
     // ====================================
 
     const refresh =
-        useCallback(
-            async () => {
+        async () => {
 
-                return Promise.all([
-                    insightsQuery.refetch(),
-                    reorderQuery.refetch(),
-                    stockMovementQuery.refetch(),
-                    deadStockQuery.refetch(),
-                    fastMovingQuery.refetch()
-                ]);
+            return Promise.all([
+                insightsQuery.refetch(),
+                reorderQuery.refetch(),
+                stockMovementQuery.refetch(),
+                deadStockQuery.refetch(),
+                fastMovingQuery.refetch()
+            ]);
 
-            },
-            [
-                insightsQuery.refetch,
-                reorderQuery.refetch,
-                stockMovementQuery.refetch,
-                deadStockQuery.refetch,
-                fastMovingQuery.refetch
-            ]
-        );
+        };
 
     // ====================================
     // COMBINED STATE
