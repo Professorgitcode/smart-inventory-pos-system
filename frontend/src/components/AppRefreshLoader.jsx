@@ -49,9 +49,6 @@ const AppRefreshLoader = ({
   const primaryDark =
     colors.primaryDark || "#176B64";
 
-  const background =
-    colors.background || "#F4F8F9";
-
   const surface =
     colors.surface || "#FFFFFF";
 

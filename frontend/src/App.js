@@ -17,7 +17,6 @@ import {
 } from "./auth";
 
 import AppLayout from "./layouts/AppLayout";
-import ThemedPage from "./layouts/ThemedPage";
 import AppRefreshLoader from "./components/AppRefreshLoader";
 
 import { useAuth } from "./auth";
@@ -63,88 +62,69 @@ const App = () => {
 
         <Route element={<AppLayout />}>
 
-          <Route
-            index
-            element={
-              <ThemedPage
-                component={Dashboard}
-              />
-            }
-          />
+    <Route
+        index
+        element={<Dashboard />}
+    />
 
-          <Route
-            path="inventory"
-            element={
-              <ThemedPage
-                component={Inventory}
-              />
-            }
-          />
+    <Route
+        path="inventory"
+        element={<Inventory />}
+    />
 
-          <Route
-            path="pos"
-            element={
-              <ThemedPage
-                component={POS}
-              />
-            }
-          />
+    <Route
+        path="pos"
+        element={<POS />}
+    />
 
-          <Route
-            path="sales-reports"
-            element={
-              <ThemedPage
-                component={SalesReports}
-              />
-            }
-          />
+    <Route
+        path="sales-reports"
+        element={<SalesReports />}
+    />
 
-          <Route
-            path="inventory-insights"
-            element={
-              <ThemedPage
-                component={InventoryInsights}
-              />
-            }
-          />
+    <Route
+        path="inventory-insights"
+        element={<InventoryInsights />}
+    />
 
-          <Route
-            path="forecasting"
-            element={
-              <ThemedPage
-                component={Forecasting}
-              />
-            }
-          />
+    <Route
+        path="forecasting"
+        element={<Forecasting />}
+    />
 
-          <Route
-            path="supplier-intelligence"
-            element={<SupplierIntelligence />}
-          />
+    <Route
+        path="supplier-intelligence"
+        element={<SupplierIntelligence />}
+    />
 
-          <Route
-            path="audit-trail"
-            element={<AuditTrail />}
-          />
+    <Route
+        path="audit-trail"
+        element={<AuditTrail />}
+    />
 
-          <Route
-            path="users"
-            element={
-                <RoleGuard
-                  roles={["Admin"]}
-                  fallback={<Navigate to="/" replace />}
-                >
+    <Route
+        path="users"
+        element={
+            <RoleGuard
+                roles={["Admin"]}
+                fallback={
+                    <Navigate
+                        to="/"
+                        replace
+                    />
+                }
+            >
                 <Users />
-              </RoleGuard>
-            }
-          />
+            </RoleGuard>
+        }
+    />
 
-          <Route
-            path="ai-procurement"
-            element={<AIProcurement />}
-          />
+    <Route
+        path="ai-procurement"
+        element={<AIProcurement />}
+    />
 
-        </Route>
+</Route>
 
       </Route>
 

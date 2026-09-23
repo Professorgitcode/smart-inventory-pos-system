@@ -5,87 +5,41 @@ import "./index.css";
 
 import App from "./App";
 
-import reportWebVitals from "./reportWebVitals";
+import AppProviders
+    from "./app/AppProviders";
 
-import {
-  BrowserRouter
-} from "react-router-dom";
+import reportWebVitals
+    from "./reportWebVitals";
 
-import {
-  QueryProvider
-} from "./query";
-
-import {
-  AuthProvider
-} from "./auth";
-
-import {
-  ThemeProvider
-} from "./context/ThemeContext";
-
-
-/*
-=====================================
-Application Bootstrap
-=====================================
-
-The application is initialized through
-the centralized providers so that the
-complete React application has access
-to:
-
-- routing
-- server-state management
-- theme state
-- authentication state
-
-Provider hierarchy:
-
-React
-  ↓
-StrictMode
-  ↓
-BrowserRouter
-  ↓
-QueryProvider
-  ↓
-ThemeProvider
-  ↓
-AuthProvider
-  ↓
-App
-  ↓
-Application Components
-
-=====================================
-*/
+// ====================================
+// APPLICATION BOOTSTRAP
+// ====================================
+// Entry point.
+//
+// ReactDOM is responsible only for
+// starting the React application.
+//
+// Provider composition lives in
+// AppProviders so the bootstrap boundary
+// remains explicit and maintainable.
+// ====================================
 
 const root = ReactDOM.createRoot(
-  document.getElementById("root")
+    document.getElementById("root")
 );
 
 root.render(
-  <React.StrictMode>
 
-    <BrowserRouter>
+    <React.StrictMode>
 
-      <QueryProvider>
-
-        <ThemeProvider>
-
-          <AuthProvider>
+        <AppProviders>
 
             <App />
 
-          </AuthProvider>
+        </AppProviders>
 
-        </ThemeProvider>
+    </React.StrictMode>
 
-      </QueryProvider>
-
-    </BrowserRouter>
-
-  </React.StrictMode>
 );
 
 reportWebVitals();

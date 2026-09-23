@@ -63,6 +63,9 @@ import {
     useAuth
 } from "../auth";
 
+import {
+    useTheme
+} from "../context/ThemeContext";
 
 import MiniStat
     from "../components/dashboard/MiniStat";
@@ -92,7 +95,15 @@ import DataVisualizationSection
 // DASHBOARD
 // ====================================
 
-const Dashboard = ({ theme }) => {
+const Dashboard = () => {
+
+    // ====================================
+    // THEME
+    // ====================================
+
+    const {
+        theme
+    } = useTheme();
 
     // ====================================
     // AUTHENTICATED USER
