@@ -1,551 +1,474 @@
-import React, { useEffect, useState } from "react";
-import { ShoppingCart, Plus, Minus } from "lucide-react";
-import { useTheme } from "../context/ThemeContext";
-import Toast from "../components/common/Toast";
-import CreatePaymentModal from "../components/CreatePaymentModal";
-import ReceiptModal from "../components/ReceiptModal";
+import React, {
+    useState
+} from "react";
 
+import {
+    useTheme
+} from "../context/ThemeContext";
 
-const POS = ({ theme }) => {
-  const PRODUCT_API = "http://localhost:5216/api/products";
-  const ORDER_API = "http://localhost:5216/api/orders";
+import usePOS
+    from "../hooks/business/pos/usePOS";
 
-  const [products, setProducts] = useState([]);
-  const [cart, setCart] = useState([]);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-    
-   // Receipt states
-  const [paymentData, setPaymentData] = useState(null);
-  const [showReceipt, setShowReceipt] = useState(false);
-  const [generatedOrderId, setGeneratedOrderId] = useState(null);
+import useToast
+    from "../hooks/ui/useToast";
 
+import POSHeader
+    from "../components/pos/POSHeader";
 
-  // ================= TOAST STATE =================
- const [toast, setToast] = useState({
-  isVisible: false,
-  header: "",
-  message: "",
-  type: "info"
-});
+import ProductCatalog
+    from "../components/pos/ProductCatalog";
 
-  const triggerToast = (
-  header,
-  message,
-  type = "info"
-) => {
-  setToast({
-    isVisible: false,
-    header,
-    message,
-    type
-  });
+import CartPanel
+    from "../components/pos/CartPanel";
 
-  setTimeout(() => {
-    setToast({
-      isVisible: true,
-      header,
-      message,
-      type
-    });
-  }, 10);
-};
+import CreatePaymentModal
+    from "../components/pos/CreatePaymentModal";
 
-  // ================= FETCH PRODUCTS =================
-  const fetchProducts = async () => {
-    try {
-      const res = await fetch(PRODUCT_API);
+import ReceiptModal
+    from "../components/pos/ReceiptModal";
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch products");
-      }
+import Toast
+    from "../components/common/Toast";
 
-      const data = await res.json();
-      setProducts(data);
+// ====================================
+// POS PAGE
+// ====================================
+// Composition layer.
+//
+// API communication remains inside
+// usePOS -> repository -> service.
+// ====================================
 
-    } catch (error) {
-      console.error(error);
-      triggerToast(
-  "Fetch Error",
-  "Failed to load products from server.",
-  "error"
-);
-    }
-  };
+const POS = () => {
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+    const {
+        theme
+    } = useTheme();
 
-  // ================= ADD TO CART =================
-  const addToCart = (product) => {
-    if (product.stockQuantity <= 0) {
-      triggerToast(
-        "Out of Stock",
-        "Product is unavailable.",
-        "error"
-      );
-      return;
-    }
+    // ====================================
+    // BUSINESS STATE
+    // ====================================
 
-    const existingItem = cart.find(
-      item => item.id === product.id
-    );
+    const {
+        products,
+        cart,
+        subtotal,
+        tax,
+        total,
+        loading,
+        isCheckingOut,
+        error,
+        actions
+    } = usePOS();
 
-    if (existingItem) {
-      if (existingItem.quantity >= product.stockQuantity) {
-        triggerToast(
-  "Stock Limit",
-  "Cannot exceed available stock quantity.",
-  "error"
-);
-        return;
-      }
+    // ====================================
+    // UI STATE
+    // ====================================
 
-      setCart(
-        cart.map(item =>
-          item.id === product.id
-            ? {
-                ...item,
-                quantity: item.quantity + 1
-              }
-            : item
-        )
-      );
+    const toast =
+        useToast();
 
-      triggerToast(
-        "Cart Update",
-        `${product.name} quantity updated`,
-        "info"
-      );
-    } else {
-      setCart([
-        ...cart,
-        {
-          ...product,
-          quantity: 1
+    const [
+        isPaymentModalOpen,
+        setIsPaymentModalOpen
+    ] = useState(false);
+
+    const [
+        paymentData,
+        setPaymentData
+    ] = useState(null);
+
+    const [
+        showReceipt,
+        setShowReceipt
+    ] = useState(false);
+
+    const [
+        generatedOrderId,
+        setGeneratedOrderId
+    ] = useState(null);
+
+    // ====================================
+    // ADD TO CART
+    // ====================================
+
+    const handleAddToCart = (
+        product
+    ) => {
+
+        if (
+            Number(
+                product?.stockQuantity || 0
+            ) <= 0
+        ) {
+
+            toast.error(
+                "Out of Stock",
+                "This product is currently unavailable."
+            );
+
+            return;
         }
-      ]);
 
-     triggerToast(
-  "Cart Updated",
-  `${product.name} added successfully.`,
-  "success"
-);;
-    }
-  };
+        const existing =
+            cart.find(
+                item =>
+                    item.id ===
+                    product.id
+            );
 
-  // ================= INCREASE QTY =================
-  const increaseQty = (id) => {
-    const item = cart.find(i => i.id === id);
+        if (
+            existing &&
+            existing.quantity >=
+                product.stockQuantity
+        ) {
 
-    if (!item) return;
+            toast.error(
+                "Stock Limit",
+                "Cannot exceed available stock quantity."
+            );
 
-    if (item.quantity >= item.stockQuantity) {
-      triggerToast(
-  "Stock Limit",
-  "Cannot exceed available stock quantity.",
-  "error"
-);
-      return;
-    }
+            return;
+        }
 
-    setCart(
-      cart.map(i =>
-        i.id === id
-          ? {
-              ...i,
-              quantity: i.quantity + 1
-            }
-          : i
-      )
-    );
-  };
+        actions.addToCart(
+            product
+        );
 
-  // ================= DECREASE QTY =================
-  const decreaseQty = (id) => {
-    const item = cart.find(i => i.id === id);
+        toast.success(
+            "Cart Updated",
+            `${product.name} added to the cart.`
+        );
 
-    if (!item) return;
-
-    if (item.quantity === 1) {
-      setCart(
-        cart.filter(i => i.id !== id)
-      );
-
-      triggerToast(
-  "Item Removed",
-  `${item.name} removed from cart.`,
-  "info"
-);
-    } else {
-      setCart(
-        cart.map(i =>
-          i.id === id
-            ? {
-                ...i,
-                quantity: i.quantity - 1
-              }
-            : i
-        )
-      );
-    }
-  };
-
-  // ================= TOTAL =================
-  const total = cart.reduce(
-    (sum, item) =>
-      sum + item.price * item.quantity,
-    0
-  );
-
-  // ================= OPEN PAYMENT MODAL =================
-  const handleCheckout = () => {
-    if (cart.length === 0) {
-     triggerToast(
-  "Empty Cart",
-  "Add products before checkout.",
-  "error"
-);
-      return;
-    }
-
-    setIsPaymentModalOpen(true);
-  };
-
-  // ================= FINAL PAYMENT CONFIRM =================
-  const handlePaymentConfirm = async (paymentInfo) => {
-    const orderData = {
-      items: cart.map(item => ({
-        productId: item.id,
-        quantity: item.quantity
-      }))
     };
 
-    try {
-      const res = await fetch(ORDER_API, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(orderData)
-      });
+    // ====================================
+    // UPDATE CART
+    // ====================================
 
-      if (res.ok) {
-        const responseData = await res.json();
+    const handleUpdateQuantity = (
+        productId,
+        quantity
+    ) => {
+
+        actions.updateQuantity(
+            productId,
+            quantity
+        );
+
+    };
+
+    // ====================================
+    // REMOVE ITEM
+    // ====================================
+
+    const handleRemoveItem = (
+        productId
+    ) => {
+
+        const item =
+            cart.find(
+                product =>
+                    product.id ===
+                    productId
+            );
+
+        actions.removeFromCart(
+            productId
+        );
+
+        if (item) {
+
+            toast.info(
+                "Item Removed",
+                `${item.name} was removed from the cart.`
+            );
+
+        }
+
+    };
+
+    // ====================================
+    // OPEN CHECKOUT
+    // ====================================
+
+    const handleCheckout = () => {
+
+        if (cart.length === 0) {
+
+            toast.error(
+                "Empty Cart",
+                "Add products before checkout."
+            );
+
+            return;
+        }
+
+        setIsPaymentModalOpen(
+            true
+        );
+
+    };
+
+  // ====================================
+// CONFIRM PAYMENT
+// ====================================
+
+const handlePaymentConfirm =
+    async paymentInfo => {
+
+        try {
+
+            const result =
+                await actions.checkout();
+
+            const orderId =
+                result?.orderId ||
+                result?.id;
+
+            setGeneratedOrderId(
+                orderId
+            );
+
+            setPaymentData(
+                paymentInfo
+            );
+
+            setIsPaymentModalOpen(
+                false
+            );
+
+            setShowReceipt(
+                true
+            );
+
+            toast.success(
+                "Payment Successful",
+                "Transaction completed successfully."
+            );
+
+            return result;
+
+        } catch (
+            checkoutError
+        ) {
+
+            toast.error(
+                "Checkout Failed",
+                checkoutError?.message ||
+                    "Unable to complete the transaction."
+            );
+
+            // Important:
+            // Let the payment modal know that
+            // checkout failed so it remains open.
+            throw checkoutError;
+
+        }
+
+    };
+
+    // ====================================
+    // CLOSE RECEIPT
+    // ====================================
+
+    const handleReceiptClose = () => {
+
+        setShowReceipt(
+            false
+        );
+
+        setPaymentData(
+            null
+        );
 
         setGeneratedOrderId(
-          responseData.orderId || responseData.id
+            null
         );
 
-        setPaymentData(paymentInfo);
-
-        setShowReceipt(true);
-
-        setIsPaymentModalOpen(false);
-
-        fetchProducts();
-
-        triggerToast(
-          "Payment Successful",
-          `Payment completed for ${paymentInfo.customer}`,
-          "success"
+        toast.info(
+            "Transaction Complete",
+            "The transaction has been completed."
         );
 
-      } else {
-        const err = await res.text();
+    };
 
-        triggerToast(
-          "Checkout Failed",
-          err || "Order processing failed.",
-          "error"
-        );
-      }
+    // ====================================
+    // PAGE
+    // ====================================
 
-    } catch (error) {
-      console.error(error);
+    return (
 
-      triggerToast(
-        "Server Error",
-        "Checkout failed due to server issue.",
-        "error"
-      );
-    }
-  };
-
-  // ================= RECEIPT CLOSE =================
-  const handleReceiptClose = () => {
-    setShowReceipt(false);
-    setPaymentData(null);
-    setGeneratedOrderId(null);
-
-    // clear cart only after receipt finishes
-    setCart([]);
-
-    triggerToast(
-      "Transaction Completed",
-      "Receipt printed successfully.",
-      "success"
-    );
-  };
-
-  return (
-    <>
-      {/* TOAST */}
-      <Toast
-  header={toast.header}
-  message={toast.message}
-  type={toast.type}
-  isVisible={toast.isVisible}
-  theme={theme}
-  onClose={() =>
-    setToast(prev => ({
-      ...prev,
-      isVisible: false
-    }))
-  }
-/>
-
-      <div
-        style={{
-          display: "flex",
-          gap: "24px",
-          height: "100%"
-        }}
-      >
-        {/* LEFT SIDE PRODUCTS */}
-        <div style={{ flex: 2 }}>
-          <div
+        <div
             style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fill, minmax(180px, 1fr))",
-              gap: "16px"
+                display: "flex",
+                flexDirection: "column",
+                gap: theme.spacing.lg
             }}
-          >
-            {products.map(product => (
-              <div
-                key={product.id}
+        >
+
+            <POSHeader
+                cartItemCount={
+                    cart.length
+                }
+            />
+
+            <div
                 style={{
-                  backgroundColor: theme.colors.surface,
-                  padding: "16px",
-                  borderRadius: "12px",
-                  border: `1px solid ${theme.colors.border}`,
-                  textAlign: "center"
+                    display: "grid",
+                    gridTemplateColumns:
+                        "minmax(0, 1.8fr) minmax(360px, 1fr)",
+                    gap: theme.spacing.lg,
+                    alignItems: "start"
                 }}
-              >
-                {/* Product image placeholder */}
-                <div
-                  style={{
-                    height: "100px",
-                    backgroundColor: theme.colors.background,
-                    borderRadius: "8px",
-                    marginBottom: "12px"
-                  }}
+            >
+
+                <ProductCatalog
+
+                    products={
+                        products
+                    }
+
+                    loading={
+                        loading
+                    }
+
+                    error={
+                        error
+                    }
+
+                    onAddToCart={
+                        handleAddToCart
+                    }
+
                 />
 
-                <div style={{ fontWeight: "700" }}>
-                  {product.name}
-                </div>
+                <CartPanel
 
-                <div
-                  style={{
-                    color: theme.colors.primary,
-                    fontWeight: "800"
-                  }}
-                >
-                  ${product.price}
-                </div>
+                    cart={
+                        cart
+                    }
 
-                <div
-                  style={{
-                    fontSize: "12px",
-                    color: theme.colors.textMuted,
-                    marginBottom: "10px"
-                  }}
-                >
-                  Stock: {product.stockQuantity}
-                </div>
+                    onUpdateQuantity={
+                        handleUpdateQuantity
+                    }
 
-                <button
-                  onClick={() => addToCart(product)}
-                  disabled={product.stockQuantity <= 0}
-                  style={{
-                    width: "100%",
-                    padding: "8px",
-                    borderRadius: "6px",
-                    border: `1px solid ${theme.colors.primary}`,
-                    background:
-                      product.stockQuantity <= 0
-                        ? "#ccc"
-                        : "transparent",
-                    color:
-                      product.stockQuantity <= 0
-                        ? "#666"
-                        : theme.colors.primary,
-                    fontWeight: "600",
-                    cursor:
-                      product.stockQuantity <= 0
-                        ? "not-allowed"
-                        : "pointer"
-                  }}
-                >
-                  {product.stockQuantity <= 0
-                    ? "Out of Stock"
-                    : "Add"}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
+                    onRemoveItem={
+                        handleRemoveItem
+                    }
 
-        {/* RIGHT SIDE CART */}
-        <div
-          style={{
-            flex: 1,
-            backgroundColor: theme.colors.surface,
-            borderRadius: "16px",
-            border: `1px solid ${theme.colors.border}`,
-            display: "flex",
-            flexDirection: "column",
-            position: "sticky",
-     
-           height: "calc(100vh - 120px)",
-           overflowY: "auto",
-          }}
-        >
-          {/* Cart Header */}
-          <div
-            style={{
-              padding: "24px",
-              borderBottom: `1px solid ${theme.colors.border}`,
-              fontWeight: "700",
-              display: "flex",
-              gap: "10px"
-            }}
-          >
-            <ShoppingCart size={20} />
-            Current Cart
-          </div>
+                    subtotal={
+                        subtotal
+                    }
 
-          {/* Cart Items */}
-          <div
-            style={{
-              flex: 1,
-              padding: "24px",
-              overflowY: "auto"
-            }}
-          >
-            {cart.length === 0 ? (
-              <p style={{ color: theme.colors.textMuted }}>
-                No items added yet
-              </p>
-            ) : (
-              cart.map(item => (
-                <div
-                  key={item.id}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: "16px"
-                  }}
-                >
-                  <div>
-                    <div>{item.name}</div>
-                    <small style={{ color: theme.colors.textMuted }}>
-                      ${item.price} × {item.quantity}
-                    </small>
-                  </div>
+                    tax={
+                        tax
+                    }
 
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px"
-                    }}
-                  >
-                    <Minus
-                      size={14}
-                      style={{ cursor: "pointer" }}
-                      onClick={() =>
-                        decreaseQty(item.id)
-                      }
-                    />
+                    total={
+                        total
+                    }
 
-                    <span>{item.quantity}</span>
+                    onCheckout={
+                        handleCheckout
+                    }
 
-                    <Plus
-                      size={14}
-                      style={{ cursor: "pointer" }}
-                      onClick={() =>
-                        increaseQty(item.id)
-                      }
-                    />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+                />
 
-          {/* Checkout Section */}
-          <div
-            style={{
-              padding: "24px",
-              backgroundColor: theme.colors.background,
-              borderRadius: "0 0 16px 16px"
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: "1.25rem",
-                fontWeight: "800",
-                marginBottom: "16px"
-              }}
-            >
-              <span>Total</span>
-              <span>${total.toFixed(2)}</span>
             </div>
 
-            <button
-              onClick={handleCheckout}
-              style={{
-                width: "100%",
-                backgroundColor: theme.colors.primary,
-                color: "white",
-                padding: "14px",
-                borderRadius: "8px",
-                border: "none",
-                fontWeight: "700",
-                cursor: "pointer"
-              }}
-            >
-              Checkout
-            </button>
-          </div>
+            <CreatePaymentModal
+
+                isOpen={
+                    isPaymentModalOpen
+                }
+
+                onClose={() =>
+                    setIsPaymentModalOpen(
+                        false
+                    )
+                }
+
+                onConfirmPayment={
+                    handlePaymentConfirm
+                }
+
+                cartItems={
+                    cart
+                }
+
+                subtotal={subtotal}
+
+                tax={tax}
+
+                totalAmount={
+                    total
+                }
+
+                isSaving={isCheckingOut}
+
+                theme={
+                    theme
+                }
+
+            />
+
+            <ReceiptModal
+
+                isOpen={
+                    showReceipt
+                }
+
+                onClose={
+                    handleReceiptClose
+                }
+
+                paymentData={
+                    paymentData
+                }
+
+                orderId={
+                    generatedOrderId
+                }
+
+                theme={
+                    theme
+                }
+
+            />
+
+            <Toast
+
+                header={
+                    toast.toast.header
+                }
+
+                message={
+                    toast.toast.message
+                }
+
+                type={
+                    toast.toast.type
+                }
+
+                isVisible={
+                    toast.toast.isVisible
+                }
+
+                theme={
+                    theme
+                }
+
+                onClose={
+                    toast.hide
+                }
+
+            />
+
         </div>
-      </div>
 
-      {/* PAYMENT MODAL */}
-      <CreatePaymentModal
-        isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-        onConfirmPayment={handlePaymentConfirm}
-        cartItems={cart}
-        totalAmount={total}
-        theme={theme}
-      />
+    );
 
-      {/* RECEIPT MODAL */}
-      <ReceiptModal
-        isOpen={showReceipt}
-        onClose={handleReceiptClose}
-        paymentData={paymentData}
-        orderId={generatedOrderId}
-        theme={theme}
-      />
-    </>
-  );
 };
 
 export default POS;

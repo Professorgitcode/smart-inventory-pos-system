@@ -85,93 +85,143 @@ const usePOS = () => {
         );
 
     // ====================================
-    // ADD TO CART
-    // ====================================
+// ADD TO CART
+// ====================================
 
-    const addToCart =
-        useCallback(
-            (product, quantity = 1) => {
+const addToCart =
+    useCallback(
+        (product, quantity = 1) => {
 
-                if (!product) {
-                    return;
-                }
+            if (!product) {
+                return;
+            }
 
-                setCart(
-                    (currentCart) => {
-
-                        const existingItem =
-                            currentCart.find(
-                                (item) =>
-                                    item.id ===
-                                    product.id
-                            );
-
-                        if (existingItem) {
-
-                            return currentCart.map(
-                                (item) =>
-                                    item.id ===
-                                    product.id
-                                        ? {
-                                            ...item,
-                                            quantity:
-                                                item.quantity +
-                                                quantity
-                                        }
-                                        : item
-                            );
-                        }
-
-                        return [
-                            ...currentCart,
-                            {
-                                ...product,
-                                quantity
-                            }
-                        ];
-                    }
+            const availableStock =
+                Number(
+                    product.stockQuantity || 0
                 );
-            },
-            []
-        );
 
-    // ====================================
-    // UPDATE QUANTITY
-    // ====================================
+            if (availableStock <= 0) {
+                return;
+            }
 
-    const updateQuantity =
-        useCallback(
-            (productId, quantity) => {
+            setCart(
+                currentCart => {
 
-                setCart(
-                    (currentCart) => {
+                    const existingItem =
+                        currentCart.find(
+                            item =>
+                                item.id ===
+                                product.id
+                        );
+
+                    if (existingItem) {
+
+                        const nextQuantity =
+                            existingItem.quantity +
+                            quantity;
 
                         if (
-                            quantity <= 0
+                            nextQuantity >
+                            availableStock
                         ) {
-
-                            return currentCart.filter(
-                                (item) =>
-                                    item.id !==
-                                    productId
-                            );
+                            return currentCart;
                         }
 
                         return currentCart.map(
-                            (item) =>
+                            item =>
                                 item.id ===
-                                productId
+                                product.id
                                     ? {
                                         ...item,
-                                        quantity
+                                        quantity:
+                                            nextQuantity
                                     }
                                     : item
                         );
                     }
-                );
-            },
-            []
-        );
+
+                    const safeQuantity =
+                        Math.min(
+                            Math.max(
+                                1,
+                                quantity
+                            ),
+                            availableStock
+                        );
+
+                    return [
+                        ...currentCart,
+                        {
+                            ...product,
+                            quantity:
+                                safeQuantity
+                        }
+                    ];
+
+                }
+            );
+
+        },
+        []
+    );
+
+    // ====================================
+// UPDATE QUANTITY
+// ====================================
+
+const updateQuantity =
+    useCallback(
+        (
+            productId,
+            quantity
+        ) => {
+
+            setCart(
+                currentCart =>
+                    currentCart.map(
+                        item => {
+
+                            if (
+                                item.id !==
+                                productId
+                            ) {
+                                return item;
+                            }
+
+                            const maxQuantity =
+                                Number(
+                                    item.stockQuantity ||
+                                    0
+                                );
+
+                            const safeQuantity =
+                                Math.min(
+                                    Math.max(
+                                        0,
+                                        Number(
+                                            quantity
+                                        ) || 0
+                                    ),
+                                    maxQuantity
+                                );
+
+                            return {
+                                ...item,
+                                quantity:
+                                    safeQuantity
+                            };
+
+                        }
+                    ).filter(
+                        item =>
+                            item.quantity > 0
+                    )
+            );
+
+        },
+        []
+    );
 
     // ====================================
     // REMOVE FROM CART
@@ -270,88 +320,87 @@ const usePOS = () => {
             ]
         );
 
-    // ====================================
-    // CHECKOUT
-    // ====================================
+ // ====================================
+// CHECKOUT
+// ====================================
 
-    const checkout =
-        useCallback(
-            async (additionalData = {}) => {
+const checkout =
+    useCallback(
+        async () => {
 
-                if (
-                    cart.length === 0
-                ) {
+            if (
+                cart.length === 0
+            ) {
 
-                    throw new Error(
-                        "Cannot checkout an empty cart."
-                    );
-                }
+                throw new Error(
+                    "Cannot checkout an empty cart."
+                );
 
-                const checkoutData = {
+            }
 
-                    items:
-                        cart.map(
-                            (item) => ({
-                                productId:
-                                    item.id,
+            // ====================================
+            // BACKEND ORDER CONTRACT
+            // ====================================
+            //
+            // The current backend accepts only:
+            //
+            // items[]
+            //   productId
+            //   quantity
+            //
+            // Payment information, customer
+            // information, tax and discount are
+            // currently frontend/receipt metadata.
+            //
+            // Do not send them as part of this
+            // order payload until the backend
+            // transaction model supports them.
+            // ====================================
 
-                                quantity:
-                                    item.quantity,
+            const checkoutData = {
 
-                                price:
-                                    Number(
-                                        item.price || 0
-                                    )
-                            })
-                        ),
+                items:
+                    cart.map(
+                        item => ({
+                            productId:
+                                item.id,
 
-                    subtotal,
+                            quantity:
+                                item.quantity
+                        })
+                    )
 
-                    tax,
+            };
 
-                    total,
+            const result =
+                await checkoutMutation.mutate(
+                    checkoutData
+                );
 
-                    ...additionalData
+            if (
+                result !== undefined
+            ) {
 
-                };
+                clearCart();
 
-                const result =
-                    await checkoutMutation.mutate(
-                        checkoutData
-                    );
+            }
 
-                if (
-                    result !== undefined
-                ) {
+            return result;
 
-                    clearCart();
-
-                }
-
-                return result;
-            },
-            [
-                cart,
-                subtotal,
-                tax,
-                total,
-                checkoutMutation.mutate,
-                clearCart
-            ]
-        );
+        },
+        [
+            cart,
+            checkoutMutation,
+            clearCart
+        ]
+    );
 
     // ====================================
     // REFRESH PRODUCTS
     // ====================================
 
     const refreshProducts =
-        useCallback(
-            () =>
-                productsQuery.refetch(),
-            [
-                productsQuery.refetch
-            ]
-        );
+                productsQuery.refetch;
 
     // ====================================
     // COMBINED STATE
@@ -387,6 +436,9 @@ const usePOS = () => {
         total,
 
         loading,
+
+        isCheckingOut:
+            checkoutMutation.isLoading,
 
         error,
 
