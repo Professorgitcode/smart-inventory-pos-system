@@ -50,9 +50,6 @@ const ReceiptModal = ({
     window.print();
   };
 
-  const transactionRef =
-    "TXN-" + Math.floor(100000 + Math.random() * 900000);
-
   const styles = {
     overlay: {
       position: "fixed",
@@ -218,11 +215,6 @@ const ReceiptModal = ({
             </div>
 
             <div style={styles.row}>
-              <span>Transaction Ref:</span>
-              <span>{transactionRef}</span>
-            </div>
-
-            <div style={styles.row}>
               <span>Date:</span>
               <span>
                 {new Date(orderDate).toLocaleDateString()}
@@ -239,14 +231,14 @@ const ReceiptModal = ({
             <div style={styles.row}>
               <span>Cashier:</span>
               <span>
-                {cashierName || "Admin"}
+                {cashierName || "Unknown cashier"}
               </span>
             </div>
 
             <div style={styles.row}>
               <span>Cashier ID:</span>
               <span>
-                {cashierId || "EMP001"}
+                {cashierId || "—"}
               </span>
             </div>
 
