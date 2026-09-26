@@ -33,7 +33,8 @@ public class OrderService
 
         var order = new Order
         {
-            CreatedAt = DateTime.UtcNow,
+            // Orders are currently recorded in the server's local business timezone (Africa/Harare).
+            CreatedAt = DateTime.Now,
             Items = new List<OrderItem>()
         };
 
