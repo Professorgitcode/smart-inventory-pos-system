@@ -6,7 +6,24 @@ export const formatDate = (value, options = {}) => {
     const { style = "short" } = options;
     if (!value) return "—";
 
-    const date = value instanceof Date ? value : new Date(value);
+    // Backend persistence uses UTC. Some SQLite round-trips can
+    // return a timestamp without an explicit offset, so interpret
+    // offset-less ISO timestamps as UTC rather than browser-local time.
+    let normalizedValue = value;
+
+    if (typeof value === "string") {
+        const trimmed = value.trim();
+        const hasOffset = /(?:Z|[+-]\\d{2}:\\d{2})$/i.test(trimmed);
+        const looksLikeDateTime = /T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?$/.test(trimmed);
+
+        if (looksLikeDateTime && !hasOffset) {
+            normalizedValue = trimmed + "Z";
+        }
+    }
+
+    const date = normalizedValue instanceof Date
+        ? normalizedValue
+        : new Date(normalizedValue);
     if (Number.isNaN(date.getTime())) return "—";
 
     if (style === "long") {
