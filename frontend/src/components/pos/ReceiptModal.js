@@ -226,7 +226,7 @@ const ReceiptModal = ({
             <div style={styles.row}>
               <span>Time:</span>
               <span>
-                {formatDate(orderDate, { style: "datetime" })}
+                {formatDate(orderDate, { style: "time" })}
               </span>
             </div>
 
