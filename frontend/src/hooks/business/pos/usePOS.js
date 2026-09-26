@@ -293,16 +293,6 @@ const updateQuantity =
     // TAX
     // ====================================
     //
-    // Temporary business rule.
-    //
-    // This should eventually come from
-    // backend/application configuration.
-    // ====================================
-
-    // ====================================
-    // TAX
-    // ====================================
-    //
     // The current backend Order model does not
     // persist or calculate tax. Keep tax at zero
     // until tax becomes part of the authoritative
