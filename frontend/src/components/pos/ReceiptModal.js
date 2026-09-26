@@ -451,9 +451,25 @@ const ReceiptModal = ({
             font-family: Century Gothic, sans-serif;
           }
 
-          .hide-on-print,
-          .no-print-overlay {
+          .hide-on-print {
             display: none !important;
+          }
+
+          /*
+           * Keep the print wrapper in the document.
+           *
+           * Hiding the wrapper with display:none removes the
+           * receipt from the printable document because the
+           * receipt is its descendant. Use visibility instead
+           * so #printable-receipt can explicitly become visible.
+           */
+          .no-print-overlay {
+            visibility: hidden !important;
+            background: transparent !important;
+          }
+
+          .receipt-modal-card {
+            box-shadow: none !important;
           }
         }
       `}</style>
