@@ -6,20 +6,10 @@ export const formatDate = (value, options = {}) => {
     const { style = "short" } = options;
     if (!value) return "—";
 
-    // Backend persistence uses UTC. Some SQLite round-trips can
-    // return a timestamp without an explicit offset, so interpret
-    // offset-less ISO timestamps as UTC rather than browser-local time.
-    let normalizedValue = value;
-
-    if (typeof value === "string") {
-        const trimmed = value.trim();
-        const hasOffset = /(?:Z|[+-]\d{2}:\d{2})$/i.test(trimmed);
-        const looksLikeDateTime = /T\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(trimmed);
-
-        if (looksLikeDateTime && !hasOffset) {
-            normalizedValue = trimmed + "Z";
-        }
-    }
+    // Backend order timestamps currently use the server's
+    // business-local timezone. Preserve explicit ISO offsets when
+    // provided and let the browser format the resulting instant.
+    const normalizedValue = value;
 
     const date = normalizedValue instanceof Date
         ? normalizedValue
