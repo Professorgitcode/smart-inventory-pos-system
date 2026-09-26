@@ -398,15 +398,23 @@ const checkout =
                 productsQuery.refetch;
 
     // ====================================
-    // COMBINED STATE
+    // EXPOSED SERVER STATE
+    // ====================================
+    //
+    // Catalogue state belongs to the product
+    // catalogue. Checkout state belongs to the
+    // checkout mutation and must not make the
+    // catalogue appear broken.
     // ====================================
 
     const loading =
-        productsQuery.loading ||
-        checkoutMutation.isLoading;
+        productsQuery.loading;
 
     const error =
         productsQuery.error ||
+        null;
+
+    const checkoutError =
         checkoutMutation.error ||
         null;
 
@@ -434,6 +442,8 @@ const checkout =
 
         isCheckingOut:
             checkoutMutation.isLoading,
+
+        checkoutError,
 
         error,
 
