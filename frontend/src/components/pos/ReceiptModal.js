@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from "react";
+
+import formatDate from "../../utils/formatDate";
 import {
   Printer,
   X,
@@ -217,14 +219,14 @@ const ReceiptModal = ({
             <div style={styles.row}>
               <span>Date:</span>
               <span>
-                {new Date(orderDate).toLocaleDateString()}
+                {formatDate(orderDate)}
               </span>
             </div>
 
             <div style={styles.row}>
               <span>Time:</span>
               <span>
-                {new Date(orderDate).toLocaleTimeString()}
+                {formatDate(orderDate, { style: "datetime" })}
               </span>
             </div>
 
