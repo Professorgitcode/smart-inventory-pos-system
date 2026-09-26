@@ -3,6 +3,10 @@ import React, {
 } from "react";
 
 import {
+    useAuth
+} from "../auth";
+
+import {
     useTheme
 } from "../context/ThemeContext";
 
@@ -44,6 +48,10 @@ const POS = () => {
     const {
         theme
     } = useTheme();
+
+    const {
+        user
+    } = useAuth();
 
     // ====================================
     // BUSINESS STATE
@@ -226,13 +234,33 @@ const handlePaymentConfirm =
                 result?.orderId ||
                 result?.id;
 
+            const cashierName =
+                [
+                    user?.firstName,
+                    user?.lastName
+                ]
+                    .filter(Boolean)
+                    .join(" ") ||
+                user?.username ||
+                "Unknown cashier";
+
+            const cashierId =
+                user?.id
+                    ? String(user.id)
+                    : "—";
+
             setGeneratedOrderId(
                 orderId
             );
 
-            setPaymentData(
-                paymentInfo
-            );
+            setPaymentData({
+                ...paymentInfo,
+                orderDate:
+                    result?.createdAt ||
+                    paymentInfo.orderDate,
+                cashierName,
+                cashierId
+            });
 
             setIsPaymentModalOpen(
                 false
