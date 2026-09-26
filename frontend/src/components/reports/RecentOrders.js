@@ -1,5 +1,7 @@
 import React from "react";
 
+import formatDate from "../../utils/formatDate";
+
 import {
     CheckCircle2,
     Clock,
@@ -215,9 +217,10 @@ const RecentOrders = ({
                                             />
 
                                             {
-                                                new Date(
-                                                    order.createdAt
-                                                ).toLocaleString()
+                                                formatDate(
+                                                    order.createdAt,
+                                                    { style: "datetime" }
+                                                )
                                             }
 
                                         </div>
