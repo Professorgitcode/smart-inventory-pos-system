@@ -1,22 +1,32 @@
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using backend.Data;     // for AppDbContext
-using backend.Models;   // for Product model
-using backend.Controllers;
-using backend.DTOs;
 using System.ComponentModel.DataAnnotations;
+
 namespace backend.DTOs
 {
-   public class CreateOrderDto
-{
-    public List<OrderItemDto> Items { get; set; }
-}
+    public class CreateOrderDto
+    {
+        // ====================================
+        // ORDER ITEMS
+        // ====================================
 
-public class OrderItemDto
-{
-    public int ProductId { get; set; }
-    public int Quantity { get; set; }
-}
+        [Required]
+        [MinLength(1)]
+        public List<OrderItemDto> Items { get; set; } = new();
+    }
+
+    public class OrderItemDto
+    {
+        // ====================================
+        // PRODUCT
+        // ====================================
+
+        [Range(1, int.MaxValue)]
+        public int ProductId { get; set; }
+
+        // ====================================
+        // QUANTITY
+        // ====================================
+
+        [Range(1, int.MaxValue)]
+        public int Quantity { get; set; }
+    }
 }

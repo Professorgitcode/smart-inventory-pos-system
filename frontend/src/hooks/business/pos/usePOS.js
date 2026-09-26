@@ -299,12 +299,17 @@ const updateQuantity =
     // backend/application configuration.
     // ====================================
 
-    const tax =
-        useMemo(
-            () =>
-                subtotal * 0.15,
-            [subtotal]
-        );
+    // ====================================
+    // TAX
+    // ====================================
+    //
+    // The current backend Order model does not
+    // persist or calculate tax. Keep tax at zero
+    // until tax becomes part of the authoritative
+    // backend transaction contract.
+    // ====================================
+
+    const tax = 0;
 
     // ====================================
     // TOTAL
