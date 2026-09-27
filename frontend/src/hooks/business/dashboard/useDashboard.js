@@ -21,10 +21,6 @@
 // ====================================
 
 import {
-    useCallback
-} from "react";
-
-import {
     useQuery
 } from "../../../query";
 
@@ -57,13 +53,7 @@ const useDashboard = () => {
     // ====================================
 
     const refresh =
-        useCallback(
-            () =>
-                dashboardQuery.refetch(),
-            [
-                dashboardQuery.refetch
-            ]
-        );
+                dashboardQuery.refetch;
 
     // ====================================
     // RETURN BUSINESS API

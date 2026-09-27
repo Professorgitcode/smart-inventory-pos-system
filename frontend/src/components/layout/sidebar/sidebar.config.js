@@ -4,7 +4,6 @@ import {
     ShoppingCart,
     BrainCircuit,
     Truck,
-    Settings,
     ShieldCheck,
     Users,
     LucideGitGraph,
@@ -90,11 +89,6 @@ export const sidebarNavigation = [
                 label: "Audit Trail",
                 path: "/audit-trail",
                 icon: ShieldCheck
-            },
-            {
-                label: "Settings",
-                path: "/settings",
-                icon: Settings
             }
         ]
     }

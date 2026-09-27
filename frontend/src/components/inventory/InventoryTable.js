@@ -98,7 +98,10 @@ const InventoryTable = ({
     onAddProduct,
     loading = false,
     error = null,
-    pagination
+    pagination,
+    sortKey = null,
+    sortDirection = "asc",
+    onSortChange
 }) => {
 
     const {
@@ -260,6 +263,7 @@ const InventoryTable = ({
 
                             <Button
                                 variant="icon"
+                                icon={Edit3 }
                                 size="sm"
                                 isDark={isDark}
                                 title="Edit product"
@@ -283,6 +287,7 @@ const InventoryTable = ({
 
                             <Button
                                 variant="icon"
+                                icon={Trash2 }
                                 size="sm"
                                 isDark={isDark}
                                 title="Delete product"
@@ -298,16 +303,13 @@ const InventoryTable = ({
                                     );
 
                                 }}
-                            >
+                                style={{
+                                                color:
+                                                    theme.colors.danger
+                                            }}
+                            />
 
-                                <Trash2
-                                    size={17}
-                                    color={
-                                        theme.colors.danger
-                                    }
-                                />
 
-                            </Button>
 
                         </div>
 
@@ -400,7 +402,7 @@ const InventoryTable = ({
     // EMPTY INVENTORY
     // ====================================
 
-    if (totalProducts === 0) {
+    if (catalogueSize === 0) {
 
         return (
 
@@ -434,7 +436,7 @@ const InventoryTable = ({
         );
 
     }
-    if (products.length === 0) {
+    if (totalProducts === 0) {
 
     return (
         <Card
@@ -453,10 +455,6 @@ const InventoryTable = ({
     );
 
 }
-if (catalogueSize === 0) {
-    // Entire inventory is empty
-}
-
     // ====================================
     // TABLE
     // ====================================
@@ -568,6 +566,16 @@ if (catalogueSize === 0) {
                     data={products}
                     isDark={isDark}
                     stickyHeader
+                    manualSorting
+                    sortKey={
+                        sortKey
+                    }
+                    sortDirection={
+                        sortDirection
+                    }
+                    onSortChange={
+                        onSortChange
+                    }
                     pagination={{
                         totalItems:
                             pagination.totalItems,

@@ -28,8 +28,11 @@ import InventoryTable
 import ProductModal
     from "../components/inventory/ProductModal";
 
-import Toast
-    from "../components/common/Toast";
+import { Toast } from "../components/ui";
+
+import {
+    ConfirmDialog
+} from "../components/ui";
 
 // ====================================
 // INVENTORY PAGE
@@ -49,7 +52,7 @@ import Toast
 const Inventory = () => {
 
     const {
-        theme
+        isDark
     } = useTheme();
 
     // ====================================
@@ -60,7 +63,8 @@ const Inventory = () => {
         data: products,
         loading,
         error,
-        actions
+        actions,
+        mutation
     } = useInventory();
 
     // ====================================
@@ -73,6 +77,16 @@ const Inventory = () => {
     const toast =
         useToast();
 
+    const [
+        productPendingDeletion,
+        setProductPendingDeletion
+    ] = useState(null);
+
+    const [
+        isDeletingProduct,
+        setIsDeletingProduct
+    ] = useState(false);
+
     // ====================================
     // SEARCH STATE
     // ====================================
@@ -81,6 +95,20 @@ const Inventory = () => {
         search,
         setSearch
     ] = useState("");
+
+    // ====================================
+    // SORT STATE
+    // ====================================
+
+    const [
+        sortKey,
+        setSortKey
+    ] = useState(null);
+
+    const [
+        sortDirection,
+        setSortDirection
+    ] = useState("asc");
 
     // ====================================
     // FILTER
@@ -111,12 +139,90 @@ const Inventory = () => {
         ]);
 
     // ====================================
+    // SORT
+    // ====================================
+
+    const sortedProducts =
+        useMemo(() => {
+
+            if (!sortKey) {
+                return filteredProducts;
+            }
+
+            const sorted = [
+                ...filteredProducts
+            ];
+
+            sorted.sort(
+                (a, b) => {
+
+                    const first =
+                        a?.[sortKey];
+
+                    const second =
+                        b?.[sortKey];
+
+                    if (
+                        first == null &&
+                        second == null
+                    ) {
+                        return 0;
+                    }
+
+                    if (first == null) {
+                        return 1;
+                    }
+
+                    if (second == null) {
+                        return -1;
+                    }
+
+                    let comparison;
+
+                    if (
+                        typeof first === "number" &&
+                        typeof second === "number"
+                    ) {
+
+                        comparison =
+                            first - second;
+
+                    } else {
+
+                        comparison =
+                            String(first).localeCompare(
+                                String(second),
+                                undefined,
+                                {
+                                    numeric: true,
+                                    sensitivity: "base"
+                                }
+                            );
+
+                    }
+
+                    return sortDirection === "asc"
+                        ? comparison
+                        : -comparison;
+
+                }
+            );
+
+            return sorted;
+
+        }, [
+            filteredProducts,
+            sortKey,
+            sortDirection
+        ]);
+
+    // ====================================
     // PAGINATION
     // ====================================
 
     const pagination =
         usePagination(
-            filteredProducts,
+            sortedProducts,
             10
         );
 
@@ -216,23 +322,26 @@ const Inventory = () => {
     // DELETE PRODUCT
     // ====================================
 
-    const handleDeleteProduct = async (
+    const handleDeleteProduct = (
         id
     ) => {
 
-        const confirmed =
-            window.confirm(
-                "Delete this product from inventory?"
-            );
+        setProductPendingDeletion(id);
 
-        if (!confirmed) {
+    };
+
+    const confirmDeleteProduct = async () => {
+
+        if (productPendingDeletion === null || isDeletingProduct) {
             return;
         }
+
+        setIsDeletingProduct(true);
 
         try {
 
             await actions.deleteProduct(
-                id
+                productPendingDeletion
             );
 
             toast.success(
@@ -247,6 +356,13 @@ const Inventory = () => {
                 operationError?.message ||
                     "Unable to delete the product."
             );
+
+        }
+
+        finally {
+
+            setIsDeletingProduct(false);
+            setProductPendingDeletion(null);
 
         }
 
@@ -325,6 +441,28 @@ const Inventory = () => {
                         pagination.actions
                             .goToPage
                 }}
+
+                sortKey={
+                    sortKey
+                }
+
+                sortDirection={
+                    sortDirection
+                }
+
+                onSortChange={
+                    (key, direction) => {
+
+                        setSortKey(
+                            key
+                        );
+
+                        setSortDirection(
+                            direction
+                        );
+
+                    }
+                }
             />
 
             {/* ====================================
@@ -356,9 +494,23 @@ const Inventory = () => {
                 }
 
                 isSaving={
-                    loading
+                    mutation.isSaving
                 }
 
+            />
+
+            <ConfirmDialog
+                open={
+                    productPendingDeletion !== null
+                }
+                title="Delete product?"
+                message="This action will remove the product from inventory."
+                confirmLabel="Delete"
+                variant="danger"
+                isDark={isDark}
+                loading={isDeletingProduct}
+                onConfirm={confirmDeleteProduct}
+                onCancel={() => setProductPendingDeletion(null)}
             />
 
             {/* ====================================
@@ -383,8 +535,8 @@ const Inventory = () => {
                     toast.toast.isVisible
                 }
 
-                theme={
-                    theme
+                isDark={
+                    isDark
                 }
 
                 onClose={

@@ -57,7 +57,11 @@ const useInventory = () => {
                 ),
             {
                 invalidateKeys: [
-                    INVENTORY_KEY
+                    INVENTORY_KEY,
+                    ["pos", "products"],
+                    ["dashboard"],
+                    ["inventory-insights"],
+                    ["forecasting", "products"]
                 ],
                 throwOnError: true
             }
@@ -76,7 +80,11 @@ const useInventory = () => {
                 ),
             {
                 invalidateKeys: [
-                    INVENTORY_KEY
+                    INVENTORY_KEY,
+                    ["pos", "products"],
+                    ["dashboard"],
+                    ["inventory-insights"],
+                    ["forecasting", "products"]
                 ],
                 throwOnError: true
             }
@@ -92,7 +100,11 @@ const useInventory = () => {
                 InventoryRepository.remove(id),
             {
                 invalidateKeys: [
-                    INVENTORY_KEY
+                    INVENTORY_KEY,
+                    ["pos", "products"],
+                    ["dashboard"],
+                    ["inventory-insights"],
+                    ["forecasting", "products"]
                 ],
                 throwOnError: true
             }
@@ -123,13 +135,7 @@ const useInventory = () => {
     // ====================================
 
     const refresh =
-        useCallback(
-            () =>
-                inventoryQuery.refetch(),
-            [
-                inventoryQuery.refetch
-            ]
-        );
+    inventoryQuery.refetch;
 
     // ====================================
     // COMBINED STATE
@@ -175,6 +181,33 @@ const useInventory = () => {
                 deleteMutation.mutate,
 
             refresh
+
+        },
+
+        // ====================================
+        // MUTATION STATE
+        // ====================================
+
+        mutation: {
+
+            isCreating:
+                createMutation.isLoading,
+
+            isUpdating:
+                updateMutation.isLoading,
+
+            isDeleting:
+                deleteMutation.isLoading,
+
+            isSaving:
+                createMutation.isLoading ||
+                updateMutation.isLoading,
+
+            error:
+                createMutation.error ||
+                updateMutation.error ||
+                deleteMutation.error ||
+                null
 
         }
 

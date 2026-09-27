@@ -3,8 +3,6 @@ const API_CONFIG = {
 
   TIMEOUT: 30000,
 
-  VERSION: "v1",
-
   DEFAULT_HEADERS: {
     "Content-Type": "application/json"
   }

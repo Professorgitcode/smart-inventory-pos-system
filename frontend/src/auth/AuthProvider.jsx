@@ -26,6 +26,7 @@ import React, {
 
 import AuthContext from "./AuthContext";
 import AuthRepository from "../repositories/auth/AuthRepository";
+import { useQueryContext } from "../query";
 
 import {
   clearAuth,
@@ -40,6 +41,8 @@ import {
 // ====================================
 
 const AuthProvider = ({ children }) => {
+  const queryClient = useQueryContext();
+
   // ====================================
   // STATE
   // ====================================
@@ -63,6 +66,11 @@ const AuthProvider = ({ children }) => {
 // ====================================
 
 const restoreSession = useCallback(async () => {
+  // Authentication is a server-state boundary.
+  // Never allow cached data from a previous session
+  // to survive into this session restoration cycle.
+  queryClient.clear();
+
   const storedToken = getToken();
   const storedUser = getUser();
   const storedExpiresAt = getExpiresAt();
@@ -174,7 +182,7 @@ const restoreSession = useCallback(async () => {
 
     setIsInitializing(false);
   }
-}, []);
+}, [queryClient]);
   // ====================================
   // INITIALIZATION
   // ====================================
@@ -205,6 +213,10 @@ const restoreSession = useCallback(async () => {
           );
         }
 
+        // Discard any server-state belonging to a previous user
+        // before establishing the new authenticated session.
+        queryClient.clear();
+
         saveAuth({
           token: response.token,
           user: response.user,
@@ -220,7 +232,7 @@ const restoreSession = useCallback(async () => {
         setIsLoading(false);
       }
     },
-    []
+    [queryClient]
   );
 
   // ====================================
@@ -242,6 +254,9 @@ const restoreSession = useCallback(async () => {
 
       await AuthRepository.logout();
     } finally {
+      // Clear all server-state regardless of logout API outcome.
+      queryClient.clear();
+
       clearAuth();
 
       setTokenState(null);
@@ -250,7 +265,7 @@ const restoreSession = useCallback(async () => {
 
       setIsLoading(false);
     }
-  }, []);
+  }, [queryClient]);
 
   // ====================================
   // AUTHENTICATION STATE

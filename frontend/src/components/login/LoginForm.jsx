@@ -40,9 +40,6 @@ const LoginForm = ({
   const [showPassword, setShowPassword] =
     useState(false);
 
-  const [rememberDevice, setRememberDevice] =
-    useState(false);
-
   // ====================================
   // SUBMIT
   // ====================================
@@ -75,14 +72,8 @@ const LoginForm = ({
   const background =
     colors.background || "#F4F8F9";
 
-  const surface =
-    colors.surface || "#FFFFFF";
-
   const text =
     colors.text || "#173042";
-
-  const textMuted =
-    colors.textMuted || "#71808C";
 
   const border =
     colors.border || "#DCE5E8";
@@ -275,32 +266,14 @@ const LoginForm = ({
 
           <div className="smart-login-form-options">
 
-            <label className="smart-login-remember">
+    <span
+        className="smart-login-forgot"
+        role="note"
+    >
+        Forgot your password? Contact your system administrator.
+    </span>
 
-              <input
-                type="checkbox"
-                checked={rememberDevice}
-                onChange={(event) =>
-                  setRememberDevice(
-                    event.target.checked
-                  )
-                }
-                disabled={isLoading}
-              />
-
-              Remember this device
-
-            </label>
-
-            <button
-              type="button"
-              className="smart-login-forgot"
-              onClick={() => {}}
-            >
-              Forgot password?
-            </button>
-
-          </div>
+</div>
 
           {/* ==================================
               ERROR

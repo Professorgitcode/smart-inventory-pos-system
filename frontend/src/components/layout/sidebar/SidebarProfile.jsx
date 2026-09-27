@@ -9,6 +9,7 @@ import React from "react";
 import { UserCircle } from "lucide-react";
 
 import { useAuth } from "../../../auth";
+import { useSidebar } from "./SidebarContext";
 
 // ====================================
 // COMPONENT
@@ -21,6 +22,10 @@ const SidebarProfile = ({ theme }) => {
   } = useAuth();
 
   const colors = theme.colors;
+
+  const {
+    isCollapsed
+  } = useSidebar();
 
   // ====================================
   // FALLBACK
@@ -42,41 +47,47 @@ const SidebarProfile = ({ theme }) => {
       style={{
         display: "flex",
         alignItems: "center",
+        justifyContent: isCollapsed
+          ? "center"
+          : "flex-start",
         gap: "12px"
       }}
+      title={isCollapsed ? (fullName || user.username) : undefined}
     >
       <UserCircle
         size={42}
         color={colors.primary}
       />
 
-      <div
-        style={{
-          minWidth: 0
-        }}
-      >
+      {!isCollapsed && (
         <div
           style={{
-            color: colors.text,
-            fontWeight: 700,
-
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis"
+            minWidth: 0
           }}
         >
-          {fullName || user.username}
-        </div>
+          <div
+            style={{
+              color: colors.text,
+              fontWeight: 700,
 
-        <div
-          style={{
-            fontSize: "12px",
-            color: colors.textMuted
-          }}
-        >
-          {user.role || "User"}
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis"
+            }}
+          >
+            {fullName || user.username}
+          </div>
+
+          <div
+            style={{
+              fontSize: "12px",
+              color: colors.textMuted
+            }}
+          >
+            {user.role || "User"}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

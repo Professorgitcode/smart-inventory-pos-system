@@ -36,7 +36,7 @@ const SidebarBadge = ({
         },
 
         danger: {
-            background: colors.error,
+            background: colors.danger,
             color: "#ffffff",
         },
 
@@ -59,7 +59,7 @@ const SidebarBadge = ({
                 minWidth: 26,
                 height: 20,
 
-                padding: `0 ${spacing.xs}px`,
+                padding: `0 ${spacing.xs}`,
 
                 borderRadius: radius.full,
 

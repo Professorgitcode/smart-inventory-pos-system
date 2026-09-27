@@ -11,10 +11,6 @@ export const SidebarProvider = ({ children, initialCollapsed = false }) => {
   // Defaulting to empty object means all are open by default unless configured otherwise
   const [expandedGroups, setExpandedGroups] = useState({});
 
-  // Future Readiness State (Stubs for when APIs are integrated)
-  const [notifications, setNotifications] = useState({}); // e.g., { alerts: 5 }
-  const [userPermissions, setUserPermissions] = useState([]); // e.g., ['view_sales', 'manage_users']
-
   // Handlers
   const toggleCollapse = () => setIsCollapsed((prev) => !prev);
   
@@ -32,13 +28,9 @@ export const SidebarProvider = ({ children, initialCollapsed = false }) => {
       searchTerm,
       setSearchTerm,
       expandedGroups,
-      toggleGroup,
-      notifications,
-      setNotifications,
-      userPermissions,
-      setUserPermissions
+      toggleGroup
     }),
-    [isCollapsed, searchTerm, expandedGroups, notifications, userPermissions]
+    [isCollapsed, searchTerm, expandedGroups]
   );
 
   return (

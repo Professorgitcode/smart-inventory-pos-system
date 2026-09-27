@@ -103,6 +103,7 @@ const SidebarItem = ({
   if (disabled) {
     return (
       <div
+        title={isCollapsed ? label : undefined}
         style={{
           ...baseStyles,
           color:
@@ -163,6 +164,8 @@ const SidebarItem = ({
     return (
       <button
         type="button"
+        aria-label={isCollapsed ? label : undefined}
+        title={isCollapsed ? label : undefined}
         onClick={onClick}
         onMouseEnter={() =>
           setIsHovered(true)
@@ -235,6 +238,8 @@ const SidebarItem = ({
   return (
     <NavLink
       to={route}
+      aria-label={isCollapsed ? label : undefined}
+      title={isCollapsed ? label : undefined}
       onMouseEnter={() =>
         setIsHovered(true)
       }

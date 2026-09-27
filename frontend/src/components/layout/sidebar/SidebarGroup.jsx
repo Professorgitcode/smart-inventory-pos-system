@@ -51,13 +51,20 @@ const SidebarGroup = ({
   return (
     <div style={{ marginBottom: "8px" }}>
       {/* Group Header / Section Label */}
-      <div
+      <button
+        type="button"
         onClick={collapsible ? handleToggle : undefined}
+        disabled={!collapsible}
+        aria-expanded={collapsible ? isExpanded : undefined}
         style={{
           display: "flex",
+          width: "100%",
           justifyContent: "space-between",
           alignItems: "center",
           cursor: collapsible ? "pointer" : "default",
+          border: "none",
+          background: "transparent",
+          textAlign: "left",
           padding: collapsible ? "0 12px" : "0 0 0 12px",
           marginTop: "24px",
           marginBottom: collapsible ? "6px" : "8px",
@@ -87,7 +94,7 @@ const SidebarGroup = ({
         {collapsible && (
           isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />
         )}
-      </div>
+      </button>
 
       {/* Group Items Wrapper */}
       {(!collapsible || isExpanded || searchTerm) && (

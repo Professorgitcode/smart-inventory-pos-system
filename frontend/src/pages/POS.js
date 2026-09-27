@@ -31,8 +31,9 @@ import CreatePaymentModal
 import ReceiptModal
     from "../components/pos/ReceiptModal";
 
-import Toast
-    from "../components/common/Toast";
+import {
+    Toast
+} from "../components/ui";
 
 // ====================================
 // POS PAGE
@@ -46,7 +47,8 @@ import Toast
 const POS = () => {
 
     const {
-        theme
+        theme,
+        isDark
     } = useTheme();
 
     const {
@@ -483,8 +485,8 @@ const handlePaymentConfirm =
                     toast.toast.isVisible
                 }
 
-                theme={
-                    theme
+                isDark={
+                    isDark
                 }
 
                 onClose={

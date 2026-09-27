@@ -67,8 +67,13 @@ import SupplierInsights
 import AddSupplierModal
     from "../components/supplier/AddSupplierModal";
 
-import Toast
-    from "../components/common/Toast";
+import {
+    Toast
+} from "../components/ui";
+
+import {
+    ConfirmDialog
+} from "../components/ui";
 
 // ====================================
 // COMPONENT
@@ -77,7 +82,7 @@ import Toast
 const SupplierIntelligence = () => {
 
     const {
-        theme
+        isDark
     } = useTheme();
 
     // ====================================
@@ -102,6 +107,11 @@ const SupplierIntelligence = () => {
 
     const toast =
         useToast();
+
+    const [
+        supplierPendingDeletion,
+        setSupplierPendingDeletion
+    ] = useState(null);
 
     // ====================================
     // SEARCH STATE
@@ -192,21 +202,23 @@ const SupplierIntelligence = () => {
     // ====================================
 
     const handleDeleteSupplier =
-        async id => {
+        id => {
 
-            const confirmed =
-                window.confirm(
-                    "Delete this supplier?"
-                );
+            setSupplierPendingDeletion(id);
 
-            if (!confirmed) {
+        };
+
+    const confirmDeleteSupplier =
+        async () => {
+
+            if (supplierPendingDeletion === null || mutation.isDeleting) {
                 return;
             }
 
             try {
 
                 await actions.deleteSupplier(
-                    id
+                    supplierPendingDeletion
                 );
 
                 toast.success(
@@ -226,6 +238,12 @@ const SupplierIntelligence = () => {
                     operationError?.message ||
                     "Unable to delete supplier."
                 );
+
+            }
+
+            finally {
+
+                setSupplierPendingDeletion(null);
 
             }
 
@@ -367,6 +385,18 @@ const SupplierIntelligence = () => {
                 }
             />
 
+            <ConfirmDialog
+                open={Boolean(supplierPendingDeletion)}
+                title="Delete supplier?"
+                message="This action will permanently remove the supplier."
+                confirmLabel="Delete"
+                variant="danger"
+                isDark={isDark}
+                loading={mutation.isDeleting}
+                onConfirm={confirmDeleteSupplier}
+                onCancel={() => setSupplierPendingDeletion(null)}
+            />
+
             {/* ==================================
                 TOAST
                 ================================== */}
@@ -384,7 +414,7 @@ const SupplierIntelligence = () => {
                 isVisible={
                     toast.toast.isVisible
                 }
-                theme={theme}
+                isDark={isDark}
                 onClose={
                     toast.hide
                 }

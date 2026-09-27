@@ -28,8 +28,9 @@ import RecentOrders
 import ReportExportMenu
     from "../components/reports/ReportExportMenu";
 
-import Toast
-    from "../components/common/Toast";
+import {
+    Toast
+} from "../components/ui";
 
 import {
     Card,
@@ -54,7 +55,8 @@ import {
 const SalesReports = () => {
 
     const {
-        theme
+        theme,
+        isDark
     } = useTheme();
 
     // ====================================
@@ -523,8 +525,8 @@ const SalesReports = () => {
                     toast.toast.isVisible
                 }
 
-                theme={
-                    theme
+                isDark={
+                    isDark
                 }
 
                 onClose={

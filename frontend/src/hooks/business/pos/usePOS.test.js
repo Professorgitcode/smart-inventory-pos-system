@@ -1,8 +1,14 @@
 import React from "react";
+
 import {
     act,
     renderHook
 } from "@testing-library/react";
+
+import {
+    useQuery,
+    useMutation
+} from "../../../query";
 
 import usePOS from "./usePOS";
 
@@ -14,17 +20,8 @@ let mockProductError = null;
 let mockCheckoutError = null;
 
 jest.mock("../../../query", () => ({
-    useQuery: jest.fn(() => ({
-        data: mockProducts,
-        loading: mockProductLoading,
-        error: mockProductError,
-        refetch: jest.fn()
-    })),
-    useMutation: jest.fn(() => ({
-        mutate: mockMutate,
-        isLoading: false,
-        error: mockCheckoutError
-    }))
+    useQuery: jest.fn(),
+    useMutation: jest.fn()
 }));
 
 jest.mock("../../../repositories/pos/POSRepository", () => ({
@@ -51,21 +48,36 @@ const productB = {
 
 describe("usePOS", () => {
     beforeEach(() => {
-        jest.clearAllMocks();
 
-        mockProducts = [
-            productA,
-            productB
-        ];
+    jest.clearAllMocks();
 
-        mockProductLoading = false;
-        mockProductError = null;
-        mockCheckoutError = null;
+    mockProducts = [
+        productA,
+        productB
+    ];
 
-        mockMutate.mockResolvedValue({
-            orderId: 101
-        });
+    mockProductLoading = false;
+    mockProductError = null;
+    mockCheckoutError = null;
+
+    mockMutate.mockResolvedValue({
+        orderId: 101
     });
+
+    useQuery.mockImplementation(() => ({
+        data: mockProducts,
+        loading: mockProductLoading,
+        error: mockProductError,
+        refetch: jest.fn()
+    }));
+
+    useMutation.mockImplementation(() => ({
+        mutate: mockMutate,
+        isLoading: false,
+        error: mockCheckoutError
+    }));
+
+});
 
     test("adds products to the cart and calculates the current transaction total", () => {
         const { result } = renderHook(() => usePOS());

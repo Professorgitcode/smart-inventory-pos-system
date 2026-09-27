@@ -78,7 +78,10 @@ const usePOS = () => {
                     POS_PRODUCTS_KEY,
                     ["inventory"],
                     ["dashboard"],
-                    ["reports"]
+                    ["reports"],
+                    ["inventory-insights"],
+                    ["forecasting", "products"],
+                    ["forecasting", "forecast"]
                 ],
                 throwOnError: true
             }

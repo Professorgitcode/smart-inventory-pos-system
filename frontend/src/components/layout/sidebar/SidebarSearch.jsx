@@ -19,10 +19,8 @@ const SidebarSearch = ({ theme }) => {
           borderRadius: radius.md || "8px",
           padding: isCollapsed ? "10px 0" : "8px 12px",
           transition: "all 0.3s ease",
-          cursor: isCollapsed ? "pointer" : "text",
+          cursor: isCollapsed ? "default" : "text",
         }}
-        // Optional: If collapsed and they click the icon, you might want to auto-expand
-        // onClick={() => isCollapsed && toggleCollapse()}
       >
         <Search 
           size={14} 

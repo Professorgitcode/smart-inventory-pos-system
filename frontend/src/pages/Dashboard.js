@@ -53,7 +53,7 @@ import {
 import useDashboard
     from "../hooks/business/dashboard/useDashboard";
 
-import   useForecasting
+import useForecasting
     from "../hooks/business/forecasting/useForecasting";
 
 import useInventoryInsights
@@ -131,7 +131,8 @@ const Dashboard = () => {
     const {
         forecast,
         loading: forecastLoading,
-        error: forecastError
+        error: forecastError,
+        actions: forecastActions
     } = useForecasting();
 
     // ====================================
@@ -144,7 +145,8 @@ const Dashboard = () => {
         deadStock,
         fastMoving,
         loading: insightsLoading,
-        error: insightsError
+        error: insightsError,
+        actions: insightsActions
     } = useInventoryInsights();
 
     // ====================================
@@ -165,13 +167,6 @@ const Dashboard = () => {
         Number(
             dashboard?.lowStockCount || 0
         );
-
-    const recentOrders =
-        Array.isArray(
-            dashboard?.recentOrders
-        )
-            ? dashboard.recentOrders
-            : [];
 
     // ====================================
     // NORMALIZED ANALYTICS
@@ -341,13 +336,15 @@ const Dashboard = () => {
     // ====================================
 
     const handleRefresh =
-        async () => {
+    async () => {
 
-            await Promise.all([
-                dashboardActions.refresh()
-            ]);
+        await Promise.all([
+            dashboardActions.refresh(),
+            forecastActions.refresh(),
+            insightsActions.refresh()
+        ]);
 
-        };
+    };
 
     // ====================================
     // OVERVIEW PANEL

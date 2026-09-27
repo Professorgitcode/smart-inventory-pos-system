@@ -1,5 +1,5 @@
 import React from "react";
-import { HelpCircle, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import SidebarItem from "./SidebarItem";
@@ -61,12 +61,6 @@ const SidebarFooter = ({ theme }) => {
           "all 0.3s ease",
       }}
     >
-      <SidebarItem
-        icon={HelpCircle}
-        label="Help Center"
-        disabled={true}
-        theme={theme}
-      />
 
       <SidebarItem
         icon={LogOut}

@@ -1,75 +1,560 @@
-import React, { useEffect } from "react";
+// ====================================
+// SHARED TOAST
+// ====================================
+//
+// Canonical application notification UI.
+//
+// Responsibilities:
+// - Display success/error/warning/info feedback
+// - Provide animated entrance/exit
+// - Provide automatic dismissal
+// - Support light/dark themes
+// - Use shared design-system primitives
+//
+// This component contains presentation
+// logic only.
+//
+// Business operations remain in pages,
+// business hooks, repositories and services.
+// ====================================
+
+import React, {
+    useCallback,
+    useEffect,
+    useState
+} from "react";
+
 import theme from "../../../theme/theme";
-import { X, CheckCircle, AlertTriangle, AlertCircle, Info } from "lucide-react";
-import { Button } from "../forms/Button";
+
+import {
+    CheckCircle,
+    AlertTriangle,
+    AlertCircle,
+    Info,
+    X
+} from "lucide-react";
+
+import {
+    Button
+} from "../forms/Button";
+
+// ====================================
+// COMPONENT
+// ====================================
 
 export const Toast = ({
-  message,
-  description,
-  variant = "info", // success, warning, danger, info
-  isDark = false,
-  onClose,
-  duration = 4000,
-  style = {},
-  ...props
+    header = "",
+    message = "",
+    type = "info",
+    isVisible = false,
+    isDark = false,
+    onClose,
+    duration = 4500,
+    style = {}
 }) => {
-  const mode = theme.getMode(isDark);
 
-  useEffect(() => {
-    if (duration > 0 && onClose) {
-      const timer = setTimeout(() => onClose(), duration);
-      return () => clearTimeout(timer);
-    }
-  }, [duration, onClose]);
+    // ====================================
+    // THEME
+    // ====================================
 
-  const getIcon = () => {
-    switch (variant) {
-      case "success": return <CheckCircle size={20} color={mode.colors.success} />;
-      case "warning": return <AlertTriangle size={20} color={mode.colors.warning} />;
-      case "danger": return <AlertCircle size={20} color={mode.colors.danger} />;
-      case "info":
-      default: return <Info size={20} color={mode.colors.info} />;
-    }
-  };
+    const mode =
+        theme.getMode(isDark);
 
-  const toastStyles = {
-    position: "fixed",
-    bottom: "24px",
-    right: "24px",
-    display: "flex",
-    gap: mode.spacing.md,
-    width: "360px",
-    padding: mode.spacing.md,
-    backgroundColor: mode.colors.surface,
-    borderLeft: `4px solid ${variant === "success" ? mode.colors.success : variant === "warning" ? mode.colors.warning : variant === "danger" ? mode.colors.danger : mode.colors.info}`,
-    borderRadius: mode.radius.md,
-    boxShadow: mode.shadows.lg,
-    zIndex: 2000,
-    fontFamily: mode.typography.fontFamily.primary,
-    animation: "toastSlideIn 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
-    ...style,
-  };
+    // ====================================
+    // EXIT STATE
+    // ====================================
 
-  return (
-    <div style={toastStyles} {...props}>
-      <div style={{ flexShrink: 0, marginTop: "2px" }}>{getIcon()}</div>
-      <div style={{ flexGrow: 1 }}>
-        <div style={{ fontSize: mode.typography.fontSize.sm, fontWeight: mode.typography.fontWeight.semibold, color: mode.colors.text }}>{message}</div>
-        {description && <div style={{ fontSize: mode.typography.fontSize.xs, color: mode.colors.textMuted, marginTop: "4px" }}>{description}</div>}
-      </div>
-      {onClose && (
-        <div style={{ flexShrink: 0 }}>
-          <Button variant="icon" isDark={isDark} onClick={onClose} style={{ padding: "2px" }}>
-            <X size={14} />
-          </Button>
-        </div>
-      )}
-      <style>{`
-        @keyframes toastSlideIn {
-          from { opacity: 0; transform: translateY(20px) scale(0.95); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+    const [
+        isExiting,
+        setIsExiting
+    ] = useState(false);
+
+    // ====================================
+    // CLOSE
+    // ====================================
+
+    const handleClose =
+        useCallback(() => {
+
+            if (!isVisible) {
+                return;
+            }
+
+            setIsExiting(true);
+
+            setTimeout(() => {
+
+                onClose?.();
+
+                setIsExiting(false);
+
+            }, 300);
+
+        }, [
+            isVisible,
+            onClose
+        ]);
+
+    // ====================================
+    // AUTOMATIC DISMISSAL
+    // ====================================
+
+    useEffect(() => {
+
+        if (
+            !isVisible ||
+            duration <= 0
+        ) {
+            return undefined;
         }
-      `}</style>
-    </div>
-  );
+
+        setIsExiting(false);
+
+        const timer =
+            setTimeout(() => {
+
+                handleClose();
+
+            }, duration);
+
+        return () =>
+            clearTimeout(timer);
+
+    }, [
+        isVisible,
+        duration,
+        handleClose
+    ]);
+
+    // ====================================
+    // VISUAL CONFIGURATION
+    // ====================================
+
+    const typeConfig = {
+
+        success: {
+            background:
+                mode.colors.success,
+
+            icon: (
+                <CheckCircle
+                    size={22}
+                />
+            ),
+
+            label:
+                "Success",
+
+            accent:
+                mode.colors.textInverse
+        },
+
+        error: {
+            background:
+                mode.colors.danger,
+
+            icon: (
+                <AlertCircle
+                    size={22}
+                />
+            ),
+
+            label:
+                "Error",
+
+            accent:
+                mode.colors.textInverse
+        },
+
+        warning: {
+            background:
+                mode.colors.warning,
+
+            icon: (
+                <AlertTriangle
+                    size={22}
+                />
+            ),
+
+            label:
+                "Warning",
+
+            accent:
+                mode.colors.textInverse
+        },
+
+        info: {
+            background:
+                mode.colors.info,
+
+            icon: (
+                <Info
+                    size={22}
+                />
+            ),
+
+            label:
+                "Information",
+
+            accent:
+                mode.colors.textInverse
+        }
+
+    };
+
+    const config =
+        typeConfig[type] ||
+        typeConfig.info;
+
+    // ====================================
+    // VISIBILITY
+    // ====================================
+
+    if (
+        !isVisible &&
+        !isExiting
+    ) {
+        return null;
+    }
+
+    // ====================================
+    // CONTAINER STYLES
+    // ====================================
+
+    const containerStyle = {
+
+        position: "fixed",
+
+        top: "24px",
+
+        right: "24px",
+
+        width: "360px",
+
+        maxWidth:
+            "calc(100vw - 48px)",
+
+        backgroundColor:
+            config.background,
+
+        color:
+            config.accent,
+
+        borderRadius:
+            mode.radius.md,
+
+        boxShadow:
+            mode.shadows.xl,
+
+        display: "flex",
+
+        flexDirection: "column",
+
+        overflow: "hidden",
+
+        zIndex: 9999,
+
+        animation:
+            isExiting
+                ? "toastSlideOut 300ms ease-in forwards"
+                : "toastSlideIn 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+
+        ...style
+
+    };
+
+    // ====================================
+    // CONTENT STYLES
+    // ====================================
+
+    const contentStyle = {
+
+        padding:
+            mode.spacing.md,
+
+        display: "flex",
+
+        gap:
+            mode.spacing.md,
+
+        alignItems: "flex-start"
+
+    };
+
+    const iconStyle = {
+
+        color:
+            config.accent,
+
+        marginTop: "2px",
+
+        flexShrink: 0
+
+    };
+
+    const textContainerStyle = {
+
+        flex: 1,
+
+        minWidth: 0
+
+    };
+
+    const headerStyle = {
+
+        fontWeight:
+            mode.typography
+                .fontWeight
+                .bold,
+
+        fontSize:
+            mode.typography
+                .fontSize
+                .sm,
+
+        letterSpacing:
+            "0.2px",
+
+        lineHeight:
+            mode.typography
+                .lineHeight
+                .normal
+
+    };
+
+    const messageStyle = {
+
+        margin: 0,
+
+        marginTop: header
+            ? "4px"
+            : "0",
+
+        fontSize:
+            mode.typography
+                .fontSize
+                .xs,
+
+        fontWeight:
+            mode.typography
+                .fontWeight
+                .medium,
+
+        opacity: 0.95,
+
+        lineHeight:
+            mode.typography
+                .lineHeight
+                .normal
+
+    };
+
+    // ====================================
+    // RENDER
+    // ====================================
+
+    return (
+
+        <>
+
+            {/* ==================================
+                ANIMATION DEFINITIONS
+                ================================== */}
+
+            <style>{`
+
+                @keyframes toastSlideIn {
+
+                    from {
+                        opacity: 0;
+                        transform:
+                            translateX(100%);
+                    }
+
+                    to {
+                        opacity: 1;
+                        transform:
+                            translateX(0);
+                    }
+
+                }
+
+                @keyframes toastSlideOut {
+
+                    from {
+                        opacity: 1;
+                        transform:
+                            translateX(0);
+                    }
+
+                    to {
+                        opacity: 0;
+                        transform:
+                            translateX(100%);
+                    }
+
+                }
+
+                @keyframes toastProgress {
+
+                    from {
+                        width: 100%;
+                    }
+
+                    to {
+                        width: 0%;
+                    }
+
+                }
+
+            `}</style>
+
+            <div
+                style={containerStyle}
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+            >
+
+                {/* ==================================
+                    TOAST CONTENT
+                    ================================== */}
+
+                <div
+                    style={contentStyle}
+                >
+
+                    {/* ==================================
+                        ICON
+                        ================================== */}
+
+                    <div
+                        style={iconStyle}
+                        aria-hidden="true"
+                    >
+                        {config.icon}
+                    </div>
+
+                    {/* ==================================
+                        MESSAGE
+                        ================================== */}
+
+                    <div
+                        style={
+                            textContainerStyle
+                        }
+                    >
+
+                        {header && (
+
+                            <div
+                                style={
+                                    headerStyle
+                                }
+                            >
+                                {header}
+                            </div>
+
+                        )}
+
+                        {message && (
+
+                            <p
+                                style={
+                                    messageStyle
+                                }
+                            >
+                                {message}
+                            </p>
+
+                        )}
+
+                    </div>
+
+                    {/* ==================================
+                        CLOSE BUTTON
+                        ================================== */}
+
+                    {onClose && (
+
+                        <Button
+
+                            variant="icon"
+
+                            isDark={
+                                isDark
+                            }
+
+                            onClick={
+                                handleClose
+                            }
+
+                            icon={X}
+
+                            aria-label={
+                                "Close notification"
+                            }
+
+                            style={{
+                                color:
+                                    config.accent,
+
+                                padding:
+                                    mode.spacing
+                                        .xxs ||
+                                    "4px",
+
+                                flexShrink: 0
+                            }}
+
+                        />
+
+                    )}
+
+                </div>
+
+                {/* ==================================
+                    PROGRESS BAR
+                    ================================== */}
+
+                {duration > 0 && (
+
+                    <div
+                        aria-hidden="true"
+                        style={{
+                            height: "5px",
+
+                            width: "100%",
+
+                            backgroundColor:
+                                "rgba(0, 0, 0, 0.15)"
+                        }}
+                    >
+
+                        <div
+                            style={{
+                                height:
+                                    "100%",
+
+                                width:
+                                    "100%",
+
+                                backgroundColor:
+                                    config.accent,
+
+                                animation:
+                                    isExiting
+                                        ? "none"
+                                        : `toastProgress ${duration}ms linear forwards`
+                            }}
+                        />
+
+                    </div>
+
+                )}
+
+            </div>
+
+        </>
+    );
 };

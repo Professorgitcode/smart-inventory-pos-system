@@ -107,7 +107,7 @@ class SupplierService {
 
         const response =
             await apiClient.put(
-                `${ENDPOINTS.SUPPLIERS.ROOT}/${id}`,
+                ENDPOINTS.SUPPLIERS.BY_ID(id),
                 supplier
             );
 
@@ -124,7 +124,7 @@ class SupplierService {
 
         const response =
             await apiClient.delete(
-                `${ENDPOINTS.SUPPLIERS.ROOT}/${id}`
+                ENDPOINTS.SUPPLIERS.BY_ID(id)
             );
 
         this.unwrapResponse(

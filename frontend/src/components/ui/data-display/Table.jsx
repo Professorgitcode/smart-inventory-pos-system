@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, {
+  useMemo,
+  useState
+} from "react";
 import theme from "../../../theme/theme";
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, MoreVertical } from "lucide-react";
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight} from "lucide-react";
 import { Button } from "../forms/Button";
 
 export const Table = ({
@@ -10,22 +13,155 @@ export const Table = ({
   stickyHeader = true,
   onRowClick,
   pagination = { totalItems: 0, itemsPerPage: 10, currentPage: 1, onPageChange: () => {} },
+  sortKey = null,
+  sortDirection = "asc",
+  onSortChange,
+  manualSorting = false,
   ...props
 }) => {
-  const [sortKey, setSortKey] = useState(null);
-  const [sortDirection, setSortDirection] = useState("asc"); // asc, desc
-  const [hoveredRow, setHoveredRow] = useState(null);
+  const [
+    internalSortKey,
+    setInternalSortKey
+  ] = useState(null);
+
+  const [
+    internalSortDirection,
+    setInternalSortDirection
+  ] = useState("asc");
+
+  const [
+    hoveredRow,
+    setHoveredRow
+  ] = useState(null);
   
   const mode = theme.getMode(isDark);
 
   const handleSort = (key) => {
-    if (sortKey === key) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortKey(key);
-      setSortDirection("asc");
+
+    if (manualSorting) {
+
+      if (!onSortChange) {
+        return;
+      }
+
+      const nextDirection =
+        sortKey === key &&
+        sortDirection === "asc"
+          ? "desc"
+          : "asc";
+
+      onSortChange(
+        key,
+        nextDirection
+      );
+
+      return;
     }
+
+    if (internalSortKey === key) {
+
+      setInternalSortDirection(
+        internalSortDirection === "asc"
+          ? "desc"
+          : "asc"
+      );
+
+    } else {
+
+      setInternalSortKey(key);
+      setInternalSortDirection("asc");
+
+    }
+
   };
+
+  const activeSortKey =
+    manualSorting
+      ? sortKey
+      : internalSortKey;
+
+  const activeSortDirection =
+    manualSorting
+      ? sortDirection
+      : internalSortDirection;
+
+  const sortedData =
+    useMemo(() => {
+
+      if (
+        manualSorting ||
+        !activeSortKey
+      ) {
+        return data;
+      }
+
+      const sorted = [
+        ...data
+      ];
+
+      sorted.sort(
+        (a, b) => {
+
+          const first =
+            a?.[activeSortKey];
+
+          const second =
+            b?.[activeSortKey];
+
+          if (
+            first == null &&
+            second == null
+          ) {
+            return 0;
+          }
+
+          if (first == null) {
+            return 1;
+          }
+
+          if (second == null) {
+            return -1;
+          }
+
+          let comparison;
+
+          if (
+            typeof first === "number" &&
+            typeof second === "number"
+          ) {
+
+            comparison =
+              first - second;
+
+          } else {
+
+            comparison =
+              String(first).localeCompare(
+                String(second),
+                undefined,
+                {
+                  numeric: true,
+                  sensitivity: "base"
+                }
+              );
+
+          }
+
+          return activeSortDirection === "asc"
+            ? comparison
+            : -comparison;
+
+        }
+      );
+
+      return sorted;
+
+    }, [
+      data,
+      activeSortKey,
+      activeSortDirection,
+      manualSorting
+    ]);
 
   const tableWrapperStyles = {
     width: "100%",
@@ -85,8 +221,10 @@ export const Table = ({
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: mode.spacing.xxs }}>
                     {col.label}
-                    {col.sortable && sortKey === col.key && (
-                      sortDirection === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                    {col.sortable && activeSortKey === col.key && (
+                      activeSortDirection === "asc"
+                        ? <ChevronUp size={14} />
+                        : <ChevronDown size={14} />
                     )}
                   </div>
                 </th>
@@ -94,14 +232,14 @@ export const Table = ({
             </tr>
           </thead>
           <tbody>
-            {data.length === 0 ? (
+            {sortedData.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} style={{ padding: mode.spacing.huge, textAlign: "center", color: mode.colors.textMuted, fontSize: mode.typography.fontSize.sm }}>
                   No transactional data available.
                 </td>
               </tr>
             ) : (
-              data.map((row, rowIndex) => (
+              sortedData.map((row, rowIndex) => (
                 <tr
                   key={row.id || rowIndex}
                   onMouseEnter={() => setHoveredRow(rowIndex)}

@@ -1,10 +1,12 @@
 import axios from "axios";
+import API_CONFIG from "./apiConfig";
 
 const apiClient = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
-  headers: {
-    "Content-Type": "application/json"
-  }
+    baseURL: API_CONFIG.BASE_URL,
+    timeout: API_CONFIG.TIMEOUT,
+    headers: {
+        ...API_CONFIG.DEFAULT_HEADERS
+    }
 });
 
 /*
@@ -45,48 +47,36 @@ Response Interceptor
 
 apiClient.interceptors.response.use(
 
-  (response) => {
+    (response) => {
 
-    return response;
+        return response;
 
-  },
+    },
 
-  (error) => {
+    (error) => {
 
-    if (error.response) {
+        if (error.response) {
 
-      switch (error.response.status) {
+            switch (error.response.status) {
 
-        case 401:
+                case 401:
 
-          localStorage.removeItem("token");
+                    localStorage.removeItem("token");
 
-          window.location.href = "/login";
+                    window.location.href = "/login";
 
-          break;
+                    break;
 
-        case 403:
+                default:
 
-          alert("Access denied.");
+                    break;
+            }
 
-          break;
+        }
 
-        case 500:
-
-          alert("Internal server error.");
-
-          break;
-
-        default:
-
-          break;
-      }
+        return Promise.reject(error);
 
     }
-
-    return Promise.reject(error);
-
-  }
 
 );
 
